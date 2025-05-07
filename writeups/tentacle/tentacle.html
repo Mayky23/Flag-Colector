@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tentacle - Hacking Vault</title>
+    <title>Tentacle - Flag Colector</title>
     <link rel="stylesheet" href="../assets/writeup.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -51,7 +51,7 @@
                 
                 <!-- Imagen de ejemplo -->
                 <div class="image-box">
-                    <img src="../images/tentacle-admin-panel.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <img src="../tentacle/img/arbol.jpg" alt="Panel de administración Tentacle" class="writeup-image">
                     <p class="image-caption">Figura 1: Panel de administración vulnerable</p>
                 </div>
             </div>
@@ -92,7 +92,7 @@
                 </div>
                 
                 <div class="image-box">
-                    <img src="../images/tentacle-ssh-access.png" alt="Acceso SSH a Tentacle" class="writeup-image">
+                    <img src="../tentacle/img/arbol.jpg" alt="Acceso SSH a Tentacle" class="writeup-image">
                     <p class="image-caption">Figura 2: Sesión SSH establecida</p>
                 </div>
             </div>
@@ -101,7 +101,12 @@
         <!-- Sección de Escalada de Privilegios -->
         <section class="writeup-section">
             <h2><i class="fas fa-user-shield"></i> Escalada de Privilegios</h2>
-            <!-- Contenido de escalada... -->
+            <h3>Acceso SSH</h3>
+                
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>ssh user@10.10.10.224</code>
+                </div>
         </section>
     </div>
 

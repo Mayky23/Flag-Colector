@@ -79,8 +79,21 @@ body {
     font-weight: bold;
 }
 
+.difficulty.easy {
+    background-color: var(--easy);
+    color: white;
+}
+.difficulty.medium {
+    background-color: var(--medium);
+    color: white;
+}
 .difficulty.hard {
     background-color: var(--hard);
+    color: white;
+}    
+
+.difficulty.insane {
+    background-color: var(--insane);
     color: white;
 }
 
