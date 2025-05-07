@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Colector</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><i class="fas fa-lock-open"></i>Flag Colector</h1>
+            <p class="subtitle">Buscador de máquinas resueltas HTB / THM / VulnHub</p>
+        </div>
+    </header>
+    
+    <main>
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="Buscar máquinas por nombre, IP, técnica..." class="search-input">
+                <div class="search-filters">
+                    <select class="filter-select">
+                        <option value="">Todos los niveles</option>
+                        <option value="easy">Fácil</option>
+                        <option value="medium">Medio</option>
+                        <option value="hard">Difícil</option>
+                        <option value="insane">Insano</option>
+                    </select>
+                    <select class="filter-select">
+                        <option value="">Todos los SO</option>
+                        <option value="linux">Linux</option>
+                        <option value="windows">Windows</option>
+                    </select>
+                </div>
+            </div>
+            <label class="exact-match">
+                <input type="checkbox" id="exact-match"> 
+                <span>Coincidencia exacta</span>
+            </label>
+        </div>
+        
+        <div class="stats-bar">
+            <span class="machines-count"><i class="fas fa-server"></i> 29 máquinas disponibles</span>
+            <div class="sort-options">
+                <span>Ordenar por:</span>
+                <select class="sort-select">
+                    <option value="name">Nombre (A-Z)</option>
+                    <option value="difficulty">Dificultad</option>
+                    <option value="date">Fecha reciente</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="machines-grid">
+
+            <!-- Ejemplo de tarjeta de máquina -->
+            <div class="machine-card" data-difficulty="hard" data-os="linux">
+                <div class="machine-header">
+                    <h3>Tentacle</h3>
+                    <span class="difficulty hard"><i class="fas fa-skull"></i> Difícil</span>
+                </div>
+                <div class="machine-meta">
+                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.10.10.224</span>
+                    <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
+                </div>
+                <div class="machine-techniques">
+                    <h4><i class="fas fa-tools"></i> Técnicas:</h4>
+                    <ul>
+                        <li>MS Enumeración - 3MID Proxy</li>
+                        <li>IPAD Enumeración - 44 min</li>
+                    </ul>
+                </div>
+
+                <!--  APARTADO DE CERTIFICADOS 
+
+                <div class="machine-certifications">
+                    <h4><i class="fas fa-certificate"></i> Certificaciones:</h4>
+                    <div class="cert-badges">
+                        <span class="cert-badge">ASPPT(A)</span>
+                        <span class="cert-badge">4CPT(XA)</span>
+                        <span class="cert-badge">SSP</span>
+                    </div>
+                </div>
+                -->
+                <a href="writeups/tentacle.html" target="_blank" class="view-writeup">
+                    <i class="fas fa-file-alt"></i> Ver write-up
+                </a>
+            </div>
+            
+            <!-- Más tarjetas de máquinas... -->
+        </div>
+    </main>
+    
+    <footer>
+        <p>© 2025 Flag Colector - Todos los write-ups son con fines educativos</p>
+    </footer>
+
+    <script src="assets/scripts/search.js"></script>
+</body>
+</html>

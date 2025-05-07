@@ -1,0 +1,241 @@
+/* Estilos generales */
+:root {
+    --primary: #00ff00;
+    --primary-dark: #00cc00;
+    --background: #0a0a0a;
+    --card-bg: #111;
+    --text: #e0e0e0;
+    --text-secondary: #aaa;
+    --border: #333;
+    --linux: #2e7d32;
+    --windows: #1565c0;
+    --easy: #00c853;
+    --medium: #ffab00;
+    --hard: #ff6d00;
+    --insane: #d50000;
+    --warning: #ff9800;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background-color: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+}
+
+.writeup-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 0 20px rgba(0,255,0,0.1);
+}
+
+/* Encabezado */
+.writeup-header {
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.writeup-header h1 {
+    color: var(--primary);
+    margin: 0;
+    font-size: 2.2rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.machine-meta {
+    display: flex;
+    gap: 15px;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.os.linux {
+    color: var(--linux);
+}
+
+.os.windows {
+    color: var(--windows);
+}
+
+.difficulty {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.difficulty.hard {
+    background-color: var(--hard);
+    color: white;
+}
+
+/* Secciones */
+.writeup-section {
+    margin-bottom: 3rem;
+}
+
+.writeup-section h2 {
+    color: var(--primary);
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.writeup-section h3 {
+    color: #4fc3f7;
+    font-size: 1.3rem;
+    margin: 1.5rem 0 1rem;
+}
+
+/* Listas */
+.findings-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.findings-list li {
+    margin-bottom: 1rem;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.findings-list li:before {
+    content: "▹";
+    color: var(--primary);
+    position: absolute;
+    left: 0;
+}
+
+.findings-list ul {
+    list-style-type: none;
+    padding-left: 1rem;
+    margin-top: 0.5rem;
+}
+
+.findings-list ul li:before {
+    content: "•";
+    color: var(--text-secondary);
+}
+
+/* Cajas de comandos */
+.command-box {
+    position: relative;
+    background-color: #1a1a1a;
+    border-left: 4px solid var(--primary);
+    border-radius: 0 5px 5px 0;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+}
+
+.command-box code {
+    color: var(--text);
+    font-size: 0.95rem;
+    white-space: pre;
+}
+
+.copy-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--primary);
+    color: var(--text);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    background: var(--primary);
+    color: black;
+}
+
+/* Cajas de descubrimientos */
+.discovery-box {
+    background-color: #1a1a1a;
+    border-radius: 5px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid #4fc3f7;
+}
+
+.discovery-box.warning {
+    border-left-color: var(--warning);
+}
+
+.discovery-box h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Imágenes */
+.image-box {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.writeup-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.image-caption {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .writeup-container {
+        padding: 1.5rem;
+    }
+    
+    .machine-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .command-box {
+        padding: 1rem 0.5rem 1rem 1rem;
+    }
+    
+    .copy-btn {
+        position: relative;
+        display: block;
+        margin-top: 0.5rem;
+        width: 100%;
+        text-align: center;
+    }
+}
