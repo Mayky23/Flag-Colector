@@ -22,6 +22,12 @@
                 <input type="text" placeholder="Buscar máquinas por nombre, IP, técnica..." class="search-input">
                 <div class="search-filters">
                     <select class="filter-select">
+                        <option value="">Plataforma</option>
+                        <option value="easy">HTB</option>
+                        <option value="medium">THM</option>
+                        <option value="hard">VulnHub</option>
+                    </select>
+                    <select class="filter-select">
                         <option value="">Todos los niveles</option>
                         <option value="easy">Fácil</option>
                         <option value="medium">Medio</option>
@@ -48,7 +54,7 @@
                 <select class="sort-select">
                     <option value="name">Nombre (A-Z)</option>
                     <option value="difficulty">Dificultad</option>
-                    <option value="date">Fecha reciente</option>
+                    <option value="platform">Plataforma</option>
                 </select>
             </div>
         </div>
@@ -58,11 +64,11 @@
             <!-- Ejemplo de tarjeta de máquina -->
             <div class="machine-card" data-difficulty="hard" data-os="linux">
                 <div class="machine-header">
-                    <h3>Tentacle</h3>
-                    <span class="difficulty hard"><i class="fas fa-skull"></i> Difícil</span>
+                    <h3>THM · U.A. HighSchool</h3>
+                    <span class="difficulty hard"><i class="fas fa-skull"></i>Fácil</span>
                 </div>
                 <div class="machine-meta">
-                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.10.10.224</span>
+                    <span class="ip-address"><i class="fas fa-network-wired"></i>10.10.204.93</span>
                     <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
                 </div>
                 <div class="machine-techniques">
@@ -84,7 +90,7 @@
                     </div>
                 </div>
                 -->
-                <a href="./writeups/tentacle/tentacle.html" target="_blank" class="view-writeup">
+                <a href="./writeups/U.A.HighSchool/U.A.HighSchool.html" target="_blank" class="view-writeup">
                     <i class="fas fa-file-alt"></i> Ver write-up
                 </a>
             </div>
