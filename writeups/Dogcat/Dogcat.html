@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>U.A. HighSchool - Flag Colector</title>
+    <title>Dogcat - Flag Colector</title>
     <link rel="stylesheet" href="../assets/writeup.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -11,9 +11,9 @@
     <div class="writeup-container">
         <!-- Encabezado con metadatos -->
         <div class="writeup-header">
-            <h1><i class="fas fa-skull"></i>U.A.HighSchool</h1>
+            <h1><i class="fas fa-skull"></i>Dogcat</h1>
             <div class="machine-meta">
-                <span class="meta-item"><i class="fas fa-network-wired"></i>10.10.204.93</span>
+                <span class="meta-item"><i class="fas fa-network-wired"></i>10.10.181.154</span>
                 <span class="meta-item os linux"><i class="fab fa-linux"></i>Linux</span>
                 <span class="meta-item difficulty easy"><i class="fas fa-bolt"></i>Fácil</span>
             </div>
@@ -28,126 +28,90 @@
 
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>sudo nmap -sC -sV 10.10.204.93</code>
+                    <code>sudo nmap  -sV -Pn 10.10.181.154</code>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4>Resultado:</h4>
                     <p>PORT STATE SERVICE VERSION<br><br>
-                        22/tcp open ssh OpenSSH 8.2p1 Ubuntu 4ubuntu0.7 (Ubuntu Linux; protocol 2.0)
-                        | ssh-hostkey:
-                            3072 58:12:f5:ec:12:3b:a9:fe:81:8a:8e:2d:d8:91:21:d2:76 (RSA)
-                            256 54:1f:20:5f:d:7c:f3:24:62:47:8a:fb:8a:b2:29:c2:bb (ECDSA)
-                            256 62:16:f8:c9:60:0f:70:1f:6a:11:ab:a8:33:79:b5:5d (ED25519)<br><br>
-                        80/tcp open http Apache httpd 2.4.41 ((Ubuntu))
-                        |_http-server-header: Apache/2.4.41 (Ubuntu)
-                        |_http-title: U.A. High School
-                        Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+                        22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+                        80/tcp open http Apache httpd 2.4.38 ((Debian))<br><br>
+                        Service Info: OS: linux; CPE: cpe:/o:linux:linux_kernel</p>
                 </div>
 
                 <div class="discovery-box">
                     <h4>Características detectadas:</h4>
                     <ul class="findings-list">
-                        <li>Puerto 22: Servidor OpenSSH (8.2p1)</li>
-                        <li>Puerto 80: Servidor Web Apache (2.4.41)</li>
+                        <li>Puerto 22: Servidor OpenSSH (7.6p1)</li>
+                        <li>Puerto 80: Servidor Web Apache (2.4.38)</li>
                     </ul>
                 </div>
                 
                 <h3>Acceso al portarl web (Puerto 80)</h3>
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>http://10.10.204.93:80</code>
+                    <code>http://10.10.181.154:80</code>
                 </div>
                 
         
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto1.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <img src="..//Dogcat/img/foto1.png" alt="Panel de administración Tentacle" class="writeup-image">
                     <p class="image-caption">Figura 1: Portal Web</p>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Si inspeccionamos el contenido de la web veremos que existe una carpeta assets</p>
+                    <p>Al dar click en dog o cat nos muestra una imagen en consecuencia.<br><br>
+                    Si seleccionamos por ejemplo Dog y capturamos esa petición con Burp Suite.
+                    En el parámetro php que indica dog/cat tenemos un potencial path traversal.
+                    Añadiremos ../ después de dog
+                    </p>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto2.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 2: Identificación de la carpeta /assets</p>
+                    <img src="../Dogcat/img/foto2.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 2: Añadiendo ../ después de dog</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dogcat/img/foto3.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 3: Respuesta en la que podemos ver una posible exfiltración de datos</p>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>si accedemos a ella veremos una web en blaco: http://10.10.204.93/assets/</p>
+                    <p>Aprovechando que podemos pasar argumentos antes del parámetro podemos intentar exfiltrar datos a través de un wrapper PHP.
+                    </p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>php://filter/convert.base64-encode/resource=dog/var/www/html/index.php</code>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>El wrapper php://filter permite leer el contenido de un archivo y, en este caso, 
+                    convertirlo a una codificación Base64 para facilitar su visualización y evitar problemas de caracteres especiales.
+                    </h4>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto3.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 3: Acceso a http://10.10.204.93/assets/</p>
+                    <img src="../Dogcat/img/foto4.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <p class="image-caption">Figura 4: Uso del wrapper php://filter</p>
                 </div>
 
-                <div class="finding">
-                    <h3>Enumeración con Gobuster</h3>
-    
-                    <div class="command-box">
-                        <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                        <code>gobuster dir -u http://10.0.2.6/assets -w /usr/share/seclists/Discovery/Web-Content/common.txt</code>
-                    </div>
-
-                    <!-- Imagen -->
-                    <div class="image-box">
-                        <img src="../U.A.HighSchool/img/foto4.png" alt="Panel de administración Tentacle" class="writeup-image">
-                        <p class="image-caption">Figura 4: Enumeración web con Gobuster</p>
-                    </div>
-    
-                    <div class="discovery-box">
-                        <h4>Veremos dos URLs accesibles: </h4>
-                        <ul class="findings-list">
-                            <li>http://10.10.204.93/assets/images</li>
-                            <li>http://10.10.204.93/assets/index.php</li>
-                            <p>(La que nos interesa es la segunda URL)</p>
-                        </ul>
-                    </div>
-
-                    <!-- Imagen -->
-                    <div class="image-box">
-                        <img src="../U.A.HighSchool/img/foto5.png" alt="Panel de administración Tentacle" class="writeup-image">
-                        <p class="image-caption">Figura 5: Acceso a http://10.10.204.93/assets/index.php</p>
-                    </div>
-
-                    <div class="discovery-box-standard">
-                        <h4></h4>
-                        <p>En la primera URL no encontraremos nada, pero en cambio en la segunda URL veremos que está vacía, pero vamos a modificar la URL para intentar ejecutar comandos</p>
-                    </div>
-
-                    <div class="command-box">
-                        <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                        <code>http://10.10.204.93/assets/index.php?cmd=whoami</code>
-                    </div>
-
-                    <!-- Imagen -->
-                    <div class="image-box">
-                        <img src="../U.A.HighSchool/img/foto6.png" alt="Panel de administración Tentacle" class="writeup-image">
-                        <p class="image-caption">Figura 6: modificación URL para insertar un cmd</p>
-                    </div>
-
-                    <div class="discovery-box-standard">
-                        <h4></h4>
-                        <p>Obtendremos la respuesta en Base64, por lo tanto debemos decodificarla, para ello usaremos la terminal con el siguiente comando:</p>
-                    </div>
-
-                    <div class="command-box">
-                        <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                        <code>echo "d3d3LWRhdGEK" | base64 -d</code>
-                    </div>
-
-                    <div class="discovery-box-standard">
-                        <h4>Resultado:</h4>
-                        <p>www-data <br><br>
-                        (Esto nos da a entender que somos el usuario www-data)</p>
-                    </div>
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Se aprecia que la aplicación añade automáticamente la extensión “.php” 
+                        al valor pasado en el parámetro, lo cual indica un posible vector de vulnerabilidad 
+                        en el manejo de la inclusión de archivos
+                    </p>
+                </div>
+                
             </div>
         </section>
 
