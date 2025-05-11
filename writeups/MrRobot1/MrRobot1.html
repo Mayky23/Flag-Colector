@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dogcat - Flag Colector</title>
+    <title>Mr Robot 1 - Flag Colector</title>
     <link rel="stylesheet" href="../assets/writeup.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -11,9 +11,9 @@
     <div class="writeup-container">
         <!-- Encabezado con metadatos -->
         <div class="writeup-header">
-            <h1><i class="fas fa-skull"></i>Dogcat</h1>
+            <h1><i class="fas fa-skull"></i>Mr Robot 1</h1>
             <div class="machine-meta">
-                <span class="meta-item"><i class="fas fa-network-wired"></i>10.10.181.154</span>
+                <span class="meta-item"><i class="fas fa-network-wired"></i>10.0.2.6</span>
                 <span class="meta-item os linux"><i class="fab fa-linux"></i>Linux</span>
                 <span class="meta-item difficulty medium"><i class="fas fa-bolt"></i>Media</span>
             </div>
@@ -21,75 +21,134 @@
 
         <!-- Sección de Enumeración -->
         <section class="writeup-section">
-
             <h2><i class="fas fa-search"></i> Enumeración Web</h2>
             
             <div class="finding">
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>La máquina virtual Mr Robot 1 debe estár previamante configurada con red NAT dentro de nuestro entorno de virtualización, en este caso se usará Virtual Box</h4>
+                </div>
+
+                <h3>Netdiscover</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Primero debemos ver que IP tiene asignada la máquina objetivo</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo netdiscover -i eth1 -r 10.0.2.0/24</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto1.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 1: Uso de netdiscover</p>
+                </div>
+
+                
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Las tres primeras IPs son utilizadas por Virtual Box a nivel interno, por lo que no nos interesan</h4>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Vemos que la IP objetivo entonces será la 10.0.2.6</p>
+                </div>
 
                 <h3>Nmap</h3>
 
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>sudo nmap  -sV -Pn 10.10.181.154</code>
+                    <code>sudo nmap -sS -Pn 10.0.2.6 </code>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4>Resultado:</h4>
                     <p>PORT STATE SERVICE VERSION<br><br>
-                        22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)<br><br>
-                        80/tcp open http Apache httpd 2.4.38 ((Debian))<br><br>
-                        Service Info: OS: linux; CPE: cpe:/o:linux:linux_kernel</p>
+                        22/tcp   closed ssh<br><br>
+                        80/tcp   open   http<br><br>
+                        443/tcp  open   https<br><br>
+                        MAC Address: 08:00:27:4A:29:71 (PCS Systemtechnik/Oracle VirtualBox)
+                    
+                    </p>
                 </div>
 
                 <div class="discovery-box">
                     <h4>Características detectadas:</h4>
                     <ul class="findings-list">
-                        <li>Puerto 22: Servidor OpenSSH (7.6p1)</li>
-                        <li>Puerto 80: Servidor Web Apache (2.4.38)</li>
+                        <li>Puerto 22: Servidor OpenSSH</li>
+                        <li>Puerto 80: Servidor Web Http</li>
+                        <li>Puerto 443: Servidor Web Https</li>
                     </ul>
                 </div>
                 
                 <h3>Acceso al portarl web (Puerto 80)</h3>
+
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>http://10.10.181.154:80</code>
+                    <code>http://10.0.2.6:80</code>
                 </div>
                 
         
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto1.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 1: Portal Web</p>
+                    <img src="../MrRobot1/img/foto2.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 2: Portal Web</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4></h4>
+                    <p>Tras una animación que simula el inicio de una máquina nos da un mensaje que parece escrito por el protagonista de la serie Elliot. (No tiene nada relevante) 
+                        Luego nos muestra una serie de comandos que nos dejan interactuar con la máquina.</p>
+                    <ul class="findings-list">
+                        <li>prepare: Nos muestra un video relacionado con la serie.</li>
+                        <li>fsociety: Nos muestra un video relacionado con la serie.</li>
+                        <li>inform: Nos muestra una serie de noticias comentadas por Mr. Robot sobre el mundo.</li>
+                        <li>question: Nos muestra una serie de imágenes reivindicativas sobre la sociedad.</li>
+                        <li>wakeup: Nos muestra otro video relacionado con la serie.</li>
+                        <li>join: Este comando nos muestra lo siguiente:</li>
+                    </ul>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto3.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 3: Comando join</p>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Al dar click en dog o cat nos muestra una imagen en consecuencia.<br><br>
-                    Si seleccionamos por ejemplo Dog y capturamos esa petición con Burp Suite.
-                    En el parámetro php que indica dog/cat tenemos un potencial path traversal.
-                    Añadiremos ../ después de dog
-                    </p>
+                    <p>Parece que tendremos que responder un email, si lo introducimos tras unos segundos muestra un mensaje diciendo que “estaremos en contacto”.</p>
+                </div>
+
+                <h3>Enumeración con Gobuster</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>gobuster dir -u http://10.0.2.6 -w /usr/share/seclists/Discovery/Web-Content/common.txt</code>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto2.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 2: Añadiendo ../ después de dog</p>
+                    <img src="../MrRobot1/img/foto4.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 4: Enumeración con Gobuster</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Vemos cosas interesantes como que se trata de un sitio web de Wordpress y que tenemos directorios de archivos como wp-admin y wp-content y otros interesantes:</p>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto3.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 3: Respuesta en la que podemos ver una posible exfiltración de datos</p>
+                    <img src="../MrRobot1/img/foto5.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 5: Directorios interesantes</p>
                 </div>
 
                 <h3>Exfiltrar datos a través de un wrapper PHP</h3>
 
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Aprovechando que podemos pasar argumentos antes del parámetro podemos intentar exfiltrar datos a través de un wrapper PHP.
-                    </p>
-                </div>
 
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
