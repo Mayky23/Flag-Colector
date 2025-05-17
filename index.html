@@ -22,11 +22,12 @@
                 <input type="text" placeholder="Buscar máquinas por nombre, IP, técnica..." class="search-input">
                 <div class="search-filters">
                     <select class="filter-select">
-                        <option value="">Plataforma</option>
-                        <option value="easy">HTB</option>
-                        <option value="medium">THM</option>
-                        <option value="hard">VulnHub</option>
+                        <option value="">Todas las plataformas</option>
+                        <option value="thm">THM</option>
+                        <option value="htb">HTB</option>
+                        <option value="vulnhub">VulnHub</option>
                     </select>
+                    
                     <select class="filter-select">
                         <option value="">Todos los niveles</option>
                         <option value="easy">Fácil</option>
@@ -34,6 +35,7 @@
                         <option value="hard">Difícil</option>
                         <option value="insane">Insano</option>
                     </select>
+                    
                     <select class="filter-select">
                         <option value="">Todos los SO</option>
                         <option value="linux">Linux</option>
@@ -48,7 +50,7 @@
         </div>
         
         <div class="stats-bar">
-            <span class="machines-count"><i class="fas fa-server"></i> 2 máquinas disponibles</span>
+            <span class="machines-count"><i class="fas fa-server"></i> 5 máquinas disponibles</span>
             <div class="sort-options">
                 <span>Ordenar por:</span>
                 <select class="sort-select">
@@ -61,15 +63,15 @@
         
         <div class="machines-grid">
 
-            <!-- Ejemplo de tarjeta de máquina -->
-            <div class="machine-card" data-difficulty="hard" data-os="linux">
+            <!-- Máquina 1 -->
+            <div class="machine-card" data-difficulty="easy" data-os="linux" data-platform="thm">
                 <div class="machine-header">
-                    <h3>THM · U.A. HighSchool</h3>
-                    <span class="difficulty easy"><i class="fas fa-skull"></i>Fácil</span>
+                    <h3>U.A. HighSchool</h3>
+                    <span class="difficulty easy"><i class="fas fa-skull"></i> Fácil</span>
                 </div>
                 <div class="machine-meta">
-                    <span class="ip-address"><i class="fas fa-network-wired"></i>10.10.181.154</span>
-                    <span class="os linux"><i class="fab fa-linux"></i>Linux</span>
+                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.10.181.154</span>
+                    <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
                 </div>
                 <div class="machine-techniques">
                     <h4><i class="fas fa-tools"></i> Técnicas:</h4>
@@ -82,14 +84,15 @@
                     <i class="fas fa-file-alt"></i> Ver write-up
                 </a>
             </div>
-
-            <div class="machine-card" data-difficulty="hard" data-os="linux">
+        
+            <!-- Máquina 2 -->
+            <div class="machine-card" data-difficulty="medium" data-os="linux" data-platform="thm">
                 <div class="machine-header">
-                    <h3>THM · Dogcat</h3>
-                    <span class="difficulty medium"><i class="fas fa-skull"></i>Media</span>
+                    <h3>Dogcat</h3>
+                    <span class="difficulty medium"><i class="fas fa-skull"></i> Medio</span>
                 </div>
                 <div class="machine-meta">
-                    <span class="ip-address"><i class="fas fa-network-wired"></i>10.10.204.93</span>
+                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.10.204.93</span>
                     <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
                 </div>
                 <div class="machine-techniques">
@@ -103,14 +106,15 @@
                     <i class="fas fa-file-alt"></i> Ver write-up
                 </a>
             </div>
-
-            <div class="machine-card" data-difficulty="hard" data-os="linux">
+        
+            <!-- Máquina 3 -->
+            <div class="machine-card" data-difficulty="medium" data-os="linux" data-platform="vulnhub">
                 <div class="machine-header">
-                    <h3>VulnHub · Mr Robot 1</h3>
-                    <span class="difficulty medium"><i class="fas fa-skull"></i>Media</span>
+                    <h3>Mr Robot 1</h3>
+                    <span class="difficulty medium"><i class="fas fa-skull"></i> Medio</span>
                 </div>
                 <div class="machine-meta">
-                    <span class="ip-address"><i class="fas fa-network-wired"></i>10.0.2.6</span>
+                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.0.2.6</span>
                     <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
                 </div>
                 <div class="machine-techniques">
@@ -124,15 +128,16 @@
                     <i class="fas fa-file-alt"></i> Ver write-up
                 </a>
             </div>
-
-            <div class="machine-card" data-difficulty="hard" data-os="linux">
+        
+            <!-- Máquina 4 -->
+            <div class="machine-card" data-difficulty="medium" data-os="linux" data-platform="thm">
                 <div class="machine-header">
-                    <h3>THM · Harder</h3>
-                    <span class="difficulty medium"><i class="fas fa-skull"></i>Media</span>
+                    <h3>Harder</h3>
+                    <span class="difficulty medium"><i class="fas fa-skull"></i> Medio</span>
                 </div>
                 <div class="machine-meta">
-                    <span class="ip-address"><i class="fas fa-network-wired"></i>10.10.204.70</span>
-                    <span class="os linux"><i class="fab fa-linux"></i>Linux</span>
+                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.10.204.70</span>
+                    <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
                 </div>
                 <div class="machine-techniques">
                     <h4><i class="fas fa-tools"></i> Técnicas:</h4>
@@ -145,15 +150,16 @@
                     <i class="fas fa-file-alt"></i> Ver write-up
                 </a>
             </div>
-
-            <div class="machine-card" data-difficulty="hard" data-os="linux">
+        
+            <!-- Máquina 5 -->
+            <div class="machine-card" data-difficulty="medium" data-os="linux" data-platform="thm">
                 <div class="machine-header">
-                    <h3>THM · Bite Me</h3>
-                    <span class="difficulty medium"><i class="fas fa-skull"></i>Media</span>
+                    <h3>Bite Me</h3>
+                    <span class="difficulty medium"><i class="fas fa-skull"></i> Medio</span>
                 </div>
                 <div class="machine-meta">
-                    <span class="ip-address"><i class="fas fa-network-wired"></i>10.10.31.72</span>
-                    <span class="os linux"><i class="fab fa-linux"></i>Linux</span>
+                    <span class="ip-address"><i class="fas fa-network-wired"></i> 10.10.31.72</span>
+                    <span class="os linux"><i class="fab fa-linux"></i> Linux</span>
                 </div>
                 <div class="machine-techniques">
                     <h4><i class="fas fa-tools"></i> Técnicas:</h4>
@@ -166,8 +172,6 @@
                     <i class="fas fa-file-alt"></i> Ver write-up
                 </a>
             </div>
-            
-            <!-- Más tarjetas de máquinas... -->
         </div>
     </main>
     
@@ -175,6 +179,6 @@
         <p>© 2025 Flag Colector - Todos los write-ups son con fines educativos</p>
     </footer>
 
-    <script src="assets/scripts/search.js"></script>
+    <script src="./assets/scripts/search.js"></script>
 </body>
 </html>

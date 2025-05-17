@@ -41,32 +41,3 @@ const htmlTemplate = (content, title) => `<!DOCTYPE html>
     <script>hljs.highlightAll();</script>
 </body>
 </html>`;
-
-// Procesar todos los archivos .md en la carpeta writeups
-const processMarkdownFiles = () => {
-    const writeupsDir = path.join(__dirname, '../writeups');
-    const files = fs.readdirSync(writeupsDir);
-    const mdFiles = files.filter(file => file.endsWith('.md'));
-    
-    if (mdFiles.length === 0) {
-        console.log('No se encontraron archivos .md en la carpeta writeups');
-        return;
-    }
-    
-    mdFiles.forEach(file => {
-        const filePath = path.join(writeupsDir, file);
-        const mdContent = fs.readFileSync(filePath, 'utf8');
-        const htmlContent = marked(mdContent);
-        const title = file.replace('.md', '');
-        const finalHtml = htmlTemplate(htmlContent, title);
-        
-        const outputFile = path.join(writeupsDir, `${title}.html`);
-        fs.writeFileSync(outputFile, finalHtml);
-        console.log(`Convertido: ${file} → ${title}.html`);
-    });
-    
-    console.log(`\nProceso completado. ${mdFiles.length} archivos convertidos.`);
-};
-
-// Ejecutar la conversión
-processMarkdownFiles();
